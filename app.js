@@ -5,6 +5,27 @@
 const pct = (x) => `${Math.round(x * 100)}%`;
 const T = (c) => TEAMS[c];
 
+// Kickoff in Singapore Time. Schedule times are stored as US Eastern
+// (EDT, UTC-4 in June); SGT is UTC+8, i.e. ET + 12h — so most games land
+// on the following SGT morning/afternoon.
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function kickoffSGT(m) {
+  const [mon, day] = m.d.split(" ");
+  const [hh, mm] = m.et.split(":").map(Number);
+  const utc = Date.UTC(2026, MONTH_NAMES.indexOf(mon), +day, hh + 4, mm);
+  const sgt = new Date(utc + 8 * 3600 * 1000);
+  const h = sgt.getUTCHours();
+  const h12 = ((h + 11) % 12) + 1;
+  return {
+    ts: utc,
+    date: `${MONTH_NAMES[sgt.getUTCMonth()]} ${sgt.getUTCDate()}`,
+    time: `${h12}:${String(sgt.getUTCMinutes()).padStart(2, "0")} ${h >= 12 ? "pm" : "am"}`,
+  };
+}
+const MATCHES_SGT = MATCHES
+  .map((m) => ({ ...m, sgt: kickoffSGT(m) }))
+  .sort((x, y) => x.sgt.ts - y.sgt.ts);
+
 function pickOutcome(p) {
   if (p.d >= p.h && p.d >= p.a) return "d";
   return p.h >= p.a ? "h" : "a";
@@ -83,17 +104,17 @@ function renderMatches() {
   wrap.innerHTML = "";
 
   let shown = 0, currentDate = null;
-  for (const m of MATCHES) {
+  for (const m of MATCHES_SGT) {
     const h = T(m.h), a = T(m.a);
     if (groupFilter !== "all" && m.g !== groupFilter) continue;
     if (query && !(h.name.toLowerCase().includes(query) || a.name.toLowerCase().includes(query))) continue;
     shown++;
 
-    if (m.d !== currentDate) {
-      currentDate = m.d;
+    if (m.sgt.date !== currentDate) {
+      currentDate = m.sgt.date;
       const hd = document.createElement("div");
       hd.className = "date-header";
-      hd.textContent = `${m.d}, 2026`;
+      hd.textContent = `${m.sgt.date}, 2026 — Singapore Time`;
       wrap.appendChild(hd);
     }
 
@@ -114,7 +135,7 @@ function renderMatches() {
       <summary>
         <div class="match-top">
           <span class="badge group-badge">Group ${m.g}</span>
-          <span class="venue">${m.city}</span>
+          <span class="venue">${m.sgt.time} SGT · ${m.city}</span>
           ${m.result ? `<span class="badge played-badge">FT ${m.result[0]}–${m.result[1]}</span>` : ""}
         </div>
         <div class="teams">
@@ -249,7 +270,7 @@ function renderOdds(sim) {
   // match 1X2 calculator
   const matchSel = document.getElementById("calc-match");
   matchSel.innerHTML = MATCHES.map((m, i) =>
-    m.result ? "" : `<option value="${i}">${m.d} · ${T(m.h).name} vs ${T(m.a).name} (Grp ${m.g})</option>`).join("");
+    m.result ? "" : `<option value="${i}">${kickoffSGT(m).date}, ${kickoffSGT(m).time} SGT · ${T(m.h).name} vs ${T(m.a).name} (Grp ${m.g})</option>`).join("");
   document.getElementById("calc-match-btn").addEventListener("click", () => {
     const m = MATCHES[parseInt(matchSel.value, 10)];
     const oh = parseFloat(document.getElementById("calc-h").value);

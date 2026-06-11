@@ -17,6 +17,10 @@ xdg-open index.html    # Linux
 
 ## What's inside
 
+All dates and kickoff times are displayed in **Singapore Time (SGT)** — the
+schedule data is stored as US Eastern kickoffs and converted (+12h), so most
+matches land on the SGT morning/afternoon after their US calendar date.
+
 | Tab | Contents |
 |---|---|
 | **Match predictions** | All 72 group games, day by day: W/D/L probability bars, projected scoreline, confidence badge, and an expandable written rationale (numbers + scouting context) for every match |
