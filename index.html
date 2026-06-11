@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup 2026 — Match Predictions & Analysis</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <h1>⚽ World Cup 2026 <span>Predictor</span></h1>
+  <p class="tagline">Elo-driven win probabilities, projected scores and written rationale for all 72 group-stage matches — plus a full knockout projection. Data snapshot: 11 June 2026 (kick-off day).</p>
+</header>
+
+<div id="champion-banner" class="champion-banner"></div>
+
+<nav class="tabs">
+  <button class="tab active" data-panel="panel-matches">Match predictions</button>
+  <button class="tab" data-panel="panel-groups">Group projections</button>
+  <button class="tab" data-panel="panel-bracket">Knockout projection</button>
+  <button class="tab" data-panel="panel-method">Methodology &amp; data</button>
+</nav>
+
+<main>
+  <section id="panel-matches" class="panel active">
+    <div class="toolbar">
+      <select id="filter-group"><option value="all">All groups</option></select>
+      <input id="filter-search" type="search" placeholder="Search team…">
+      <span id="match-count" class="muted"></span>
+    </div>
+    <p class="hint muted">Click any match to read the full rationale. Bars show win / draw / win probability.</p>
+    <div id="matches"></div>
+  </section>
+
+  <section id="panel-groups" class="panel">
+    <p class="hint muted">Tables ranked by expected points (xPts) over all six group games, folding in results already played. Top two advance; the eight best third-placed teams (highlighted) also go through.</p>
+    <div id="groups" class="groups-grid"></div>
+  </section>
+
+  <section id="panel-bracket" class="panel">
+    <p class="hint muted">Illustrative bracket built from the projected group finishes. The real Round-of-32 pairings depend on which eight third-placed teams advance (FIFA Annex C defines 495 scenarios), so treat the pathway — not the exact pairings — as the forecast.</p>
+    <div id="bracket" class="bracket"></div>
+  </section>
+
+  <section id="panel-method" class="panel method">
+    <h2>How the predictions work</h2>
+    <p>Every probability on this page comes from one transparent model rather than gut feel:</p>
+    <ol>
+      <li><strong>Team strength — Elo ratings.</strong> Each of the 48 teams carries a World Football Elo rating (eloratings.net snapshot, 11&nbsp;June&nbsp;2026; top teams confirmed against press reports — Spain&nbsp;2157, Argentina&nbsp;2115, France&nbsp;2063, England&nbsp;2024, Brazil&nbsp;1991 — with remaining values closely estimated from the published early-2026 tables). Elo is the best single predictor of international results because it weights opponent strength, margin and match importance.</li>
+      <li><strong>Host advantage.</strong> Mexico, the USA and Canada receive a +50 Elo boost when playing inside their own country — roughly the historically observed World Cup host effect (hosts outperform their ranking in ~80% of tournaments).</li>
+      <li><strong>Win probability.</strong> The classic Elo formula <code>P = 1 / (1 + 10^(−diff/400))</code> converts the rating gap into a head-to-head expectation.</li>
+      <li><strong>Draws.</strong> Group games get a draw probability of up to 28% for evenly matched sides, decaying with the rating gap (Gaussian, width 650) — calibrated to the ~25–30% historical draw rate in World Cup group stages.</li>
+      <li><strong>Scorelines.</strong> Expected goals for each side are derived from the rating gap around a 1.4-goal baseline, and the most likely exact score is read off a joint Poisson grid, constrained to agree with the predicted outcome.</li>
+      <li><strong>Groups &amp; knockouts.</strong> Group tables rank teams by expected points across all six fixtures (already-played results count at face value). The knockout tree advances the higher-probability side in every tie; in knockouts the draw mass is reallocated to the stronger team, which would also be favoured across extra time and penalties.</li>
+    </ol>
+    <h2>Context the model also leans on</h2>
+    <p>The written rationale for each match blends the numbers with scouting context: FIFA ranking (April 2026), recent form, squad notes, star players, and tournament history (e.g. Morocco's 2022 semi-final run, Japan's wins over Germany and Spain, England's perfect qualifying campaign, Mexico's unbeaten record in home World Cup openers).</p>
+    <h2>Honest limitations</h2>
+    <ul>
+      <li>Elo snapshots can't see late injuries, suspensions or squad rotation on dead-rubber matchday threes.</li>
+      <li>Single-match football is wildly random: a 65% favourite still loses or draws more than one game in three. Read the probabilities, not just the picks.</li>
+      <li>The knockout bracket shown is one illustrative path through FIFA's 495 possible Round-of-32 layouts.</li>
+      <li>Mid-tier Elo values are close estimates where a live June 2026 figure wasn't independently confirmable.</li>
+    </ul>
+    <h2>Sources</h2>
+    <ul class="sources">
+      <li>Groups &amp; fixtures: FIFA match schedule, ESPN, Sky Sports, NBC Sports, Yahoo Sports (June 2026).</li>
+      <li>Ratings: eloratings.net (World Football Elo Ratings); FIFA World Ranking.</li>
+      <li>Knockout format: FIFA tournament regulations Annex C, Wikipedia (2026 FIFA World Cup knockout stage).</li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <p>Built 11 June 2026 · Probabilities are forecasts, not promises — that's why they play the games.</p>
+</footer>
+
+<script src="data.js"></script>
+<script src="model.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
