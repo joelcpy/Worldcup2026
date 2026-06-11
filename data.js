@@ -236,3 +236,19 @@ const MATCHES = [
 ];
 
 const GROUPS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+
+// Outright (tournament winner) decimal odds — market consensus across the
+// major international books, 11 June 2026 (FOX Sports / ESPN / CBS / Yahoo
+// odds round-ups). Singapore Pools' own outright prices typically run a
+// touch shorter than this consensus because of its higher margin; check the
+// live price in the SG Pools app and use the calculator below the table.
+const MARKET_ODDS = [
+  { code: "ESP", odds: 5.5 },
+  { code: "FRA", odds: 6.0 },
+  { code: "ENG", odds: 8.0 },
+  { code: "BRA", odds: 9.5 },
+  { code: "POR", odds: 9.5 },
+  { code: "ARG", odds: 11.0 },
+  { code: "GER", odds: 14.0 },
+  { code: "NED", odds: 17.0 },
+];

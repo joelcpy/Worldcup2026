@@ -201,6 +201,88 @@ function renderBracket(proj) {
      </div>`;
 }
 
+// ---------- Odds & value ----------
+function evRow(p, odds) {
+  const implied = 1 / odds;
+  const ev = p * odds - 1;
+  return { implied, ev, edge: p - implied };
+}
+
+function verdictBadge(ev) {
+  if (ev >= 0.05) return `<span class="badge st-adv">Value ✅</span>`;
+  if (ev >= -0.05) return `<span class="badge st-third">Fair</span>`;
+  return `<span class="badge st-out">No value</span>`;
+}
+
+function renderOdds(sim) {
+  // outright comparison table
+  const tbody = document.querySelector("#outright-table tbody");
+  tbody.innerHTML = MARKET_ODDS.map(({ code, odds }) => {
+    const t = T(code), p = sim[code].champ;
+    const { implied, ev, edge } = evRow(p, odds);
+    return `<tr>
+      <td>${t.flag} ${t.name}</td><td>${odds.toFixed(2)}</td>
+      <td>${pct(implied)}</td><td>${pct(p)}</td>
+      <td class="${edge >= 0 ? "pos" : "neg"}">${edge >= 0 ? "+" : ""}${(edge * 100).toFixed(1)}pp</td>
+      <td class="${ev >= 0 ? "pos" : "neg"}">${ev >= 0 ? "+" : ""}${(ev * 100).toFixed(0)}%</td>
+      <td>${verdictBadge(ev)}</td>
+    </tr>`;
+  }).join("");
+
+  // outright calculator
+  const teamSel = document.getElementById("calc-out-team");
+  const byChamp = Object.keys(TEAMS).sort((a, b) => sim[b].champ - sim[a].champ);
+  teamSel.innerHTML = byChamp.map((c) =>
+    `<option value="${c}">${T(c).name} — model ${(sim[c].champ * 100).toFixed(1)}%</option>`).join("");
+  document.getElementById("calc-out-btn").addEventListener("click", () => {
+    const code = teamSel.value;
+    const odds = parseFloat(document.getElementById("calc-out-odds").value);
+    const box = document.getElementById("calc-out-result");
+    if (!odds || odds <= 1) { box.innerHTML = `<p class="muted">Enter decimal odds above 1.00.</p>`; return; }
+    const p = sim[code].champ;
+    const { implied, ev, edge } = evRow(p, odds);
+    box.innerHTML = `<p>${T(code).flag} <strong>${T(code).name}</strong> at <strong>${odds.toFixed(2)}</strong>:
+      market implies ${pct(implied)}, model says ${pct(p)}
+      (edge ${edge >= 0 ? "+" : ""}${(edge * 100).toFixed(1)}pp, EV ${ev >= 0 ? "+" : ""}${(ev * 100).toFixed(0)}% per $1). ${verdictBadge(ev)}</p>`;
+  });
+
+  // match 1X2 calculator
+  const matchSel = document.getElementById("calc-match");
+  matchSel.innerHTML = MATCHES.map((m, i) =>
+    m.result ? "" : `<option value="${i}">${m.d} · ${T(m.h).name} vs ${T(m.a).name} (Grp ${m.g})</option>`).join("");
+  document.getElementById("calc-match-btn").addEventListener("click", () => {
+    const m = MATCHES[parseInt(matchSel.value, 10)];
+    const oh = parseFloat(document.getElementById("calc-h").value);
+    const od = parseFloat(document.getElementById("calc-d").value);
+    const oa = parseFloat(document.getElementById("calc-a").value);
+    const box = document.getElementById("calc-match-result");
+    if (![oh, od, oa].every((x) => x > 1)) { box.innerHTML = `<p class="muted">Enter all three decimal odds (each above 1.00).</p>`; return; }
+    const p = outcomeProbs(TEAMS, m.h, m.a, m.city);
+    const raw = [1 / oh, 1 / od, 1 / oa];
+    const book = raw[0] + raw[1] + raw[2];
+    const rows = [
+      { label: `${T(m.h).flag} ${T(m.h).name} win`, odds: oh, model: p.h },
+      { label: `Draw`, odds: od, model: p.d },
+      { label: `${T(m.a).flag} ${T(m.a).name} win`, odds: oa, model: p.a },
+    ].map((r, i) => ({ ...r, fair: raw[i] / book, ...evRow(r.model, r.odds) }));
+    const best = rows.reduce((x, y) => (y.ev > x.ev ? y : x));
+    box.innerHTML = `
+      <p class="muted">Bookmaker margin on this market: <strong>${((book - 1) * 100).toFixed(1)}%</strong></p>
+      <table class="odds-table">
+        <thead><tr><th>Outcome</th><th>Odds</th><th>Implied (fair)</th><th>Model</th><th>EV / $1</th><th>Verdict</th></tr></thead>
+        <tbody>${rows.map((r) => `<tr>
+          <td>${r.label}</td><td>${r.odds.toFixed(2)}</td>
+          <td>${pct(r.fair)}</td><td>${pct(r.model)}</td>
+          <td class="${r.ev >= 0 ? "pos" : "neg"}">${r.ev >= 0 ? "+" : ""}${(r.ev * 100).toFixed(0)}%</td>
+          <td>${verdictBadge(r.ev)}</td>
+        </tr>`).join("")}</tbody>
+      </table>
+      <p>${best.ev >= 0.05
+        ? `Best of the three: <strong>${best.label}</strong> — the price beats the model by ${(best.ev * 100).toFixed(0)}% EV.`
+        : `None of the three prices beats the model after the bookmaker margin — the model says pass on this market.`}</p>`;
+  });
+}
+
 // ---------- Tabs ----------
 function initTabs() {
   document.querySelectorAll(".tab").forEach((btn) => {
@@ -229,4 +311,5 @@ document.addEventListener("DOMContentLoaded", () => {
   const proj = projectKnockout(TEAMS, MATCHES, GROUPS);
   renderGroups(proj);
   renderBracket(proj);
+  renderOdds(simulateTournament(TEAMS, MATCHES, GROUPS, 10000));
 });

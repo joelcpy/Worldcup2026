@@ -18,6 +18,7 @@
   <button class="tab active" data-panel="panel-matches">Match predictions</button>
   <button class="tab" data-panel="panel-groups">Group projections</button>
   <button class="tab" data-panel="panel-bracket">Knockout projection</button>
+  <button class="tab" data-panel="panel-odds">Odds &amp; value</button>
   <button class="tab" data-panel="panel-method">Methodology &amp; data</button>
 </nav>
 
@@ -42,6 +43,39 @@
     <div id="bracket" class="bracket"></div>
   </section>
 
+  <section id="panel-odds" class="panel odds">
+    <h2>Outright winner — market vs model</h2>
+    <p class="hint muted">Market consensus decimal odds across the major books, 11 June 2026. Model probability comes from a 10,000-run Monte Carlo simulation of the whole tournament. <strong>EV per $1</strong> = probability × odds − 1; positive means the price beats the model's estimate. Singapore Pools' outright prices usually run slightly shorter than this consensus — paste the live SGP price into the calculator below to check the real number.</p>
+    <table class="odds-table" id="outright-table">
+      <thead><tr><th>Team</th><th>Odds</th><th>Implied</th><th>Model</th><th>Edge</th><th>EV / $1</th><th>Verdict</th></tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <h2>Check any outright price</h2>
+    <p class="hint muted">Reading the SG Pools app? Enter the team and their decimal odds.</p>
+    <div class="calc-row">
+      <select id="calc-out-team"></select>
+      <input id="calc-out-odds" type="number" min="1.01" step="0.05" placeholder="decimal odds, e.g. 5.20">
+      <button id="calc-out-btn" class="btn">Evaluate</button>
+    </div>
+    <div id="calc-out-result" class="calc-result"></div>
+
+    <h2>Check a match (1X2) price</h2>
+    <p class="hint muted">Pick any group game and enter the three decimal odds exactly as Singapore Pools lists them (1 = first-named team, X = draw, 2 = second-named team). The tool strips the bookmaker margin and compares each outcome to the model.</p>
+    <div class="calc-row">
+      <select id="calc-match"></select>
+      <input id="calc-h" type="number" min="1.01" step="0.05" placeholder="1 (home)">
+      <input id="calc-d" type="number" min="1.01" step="0.05" placeholder="X (draw)">
+      <input id="calc-a" type="number" min="1.01" step="0.05" placeholder="2 (away)">
+      <button id="calc-match-btn" class="btn">Evaluate</button>
+    </div>
+    <div id="calc-match-result" class="calc-result"></div>
+
+    <div class="rg-note">
+      <strong>A note on the maths of betting:</strong> bookmaker prices include a margin (typically 5–18% at Singapore Pools depending on market), so the average bet is negative-EV even when the model agrees with the pick. "Value" flags here mean the price beats <em>this model's</em> estimate — the model can be wrong, and a positive-EV bet still loses most of the time at long odds. Bet only what you'd happily spend on entertainment. If betting stops being fun: <a href="https://www.ncpg.org.sg" rel="noopener">NCPG (Singapore)</a>, helpline 1800-6-668-668.
+    </div>
+  </section>
+
   <section id="panel-method" class="panel method">
     <h2>How the predictions work</h2>
     <p>Every probability on this page comes from one transparent model rather than gut feel:</p>
@@ -52,6 +86,7 @@
       <li><strong>Draws.</strong> Group games get a draw probability of up to 28% for evenly matched sides, decaying with the rating gap (Gaussian, width 650) — calibrated to the ~25–30% historical draw rate in World Cup group stages.</li>
       <li><strong>Scorelines.</strong> Expected goals for each side are derived from the rating gap around a 1.4-goal baseline, and the most likely exact score is read off a joint Poisson grid, constrained to agree with the predicted outcome.</li>
       <li><strong>Groups &amp; knockouts.</strong> Group tables rank teams by expected points across all six fixtures (already-played results count at face value). The knockout tree advances the higher-probability side in every tie; in knockouts the draw mass is reallocated to the stronger team, which would also be favoured across extra time and penalties.</li>
+      <li><strong>Tournament probabilities.</strong> The Odds &amp; value tab runs a 10,000-iteration Monte Carlo simulation: every group game is sampled from its W/D/L probabilities, tables are resolved (points → sampled goal swing → Elo), the Round-of-32 template is filled, and the knockout tree is played out with sampled winners. Champion/finalist/semi-final probabilities are the run frequencies.</li>
     </ol>
     <h2>Context the model also leans on</h2>
     <p>The written rationale for each match blends the numbers with scouting context: FIFA ranking (April 2026), recent form, squad notes, star players, and tournament history (e.g. Morocco's 2022 semi-final run, Japan's wins over Germany and Spain, England's perfect qualifying campaign, Mexico's unbeaten record in home World Cup openers).</p>

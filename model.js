@@ -114,26 +114,12 @@ function projectGroup(teams, matches, group) {
     (y.xPts - x.xPts) || ((y.xGF - y.xGA) - (x.xGF - x.xGA)) || (teams[y.code].elo - teams[x.code].elo));
 }
 
-// ---- Knockout projection ----
+// ---- R32 pairing template ----
 // FIFA's real R32 bracket depends on which 8 third-placed teams advance
 // (Annex C, 495 scenarios). This builds an illustrative bracket honouring
 // the published constraints: 8 winners vs thirds, 4 winners vs runners-up,
 // 4 runner-up pairings, no same-group rematches, no winner-vs-winner.
-function projectKnockout(teams, matches, groups) {
-  const standings = {};
-  for (const g of groups) standings[g] = projectGroup(teams, matches, g);
-  const W = {}, RU = {}, TH = [];
-  for (const g of groups) {
-    W[g] = standings[g][0].code;
-    RU[g] = standings[g][1].code;
-    TH.push({ g, ...standings[g][2] });
-  }
-  TH.sort((x, y) => (y.xPts - x.xPts) || (teams[y.code].elo - teams[x.code].elo));
-  const qualifiedThirds = TH.slice(0, 8);
-  const eliminatedThirds = TH.slice(8);
-
-  // Winners of these 8 groups draw a third-placed team; greedy assignment
-  // avoids same-group pairings.
+function buildR32Pairings(W, RU, qualifiedThirds) {
   const winnerGroupsVsThirds = ["A", "C", "E", "F", "H", "I", "K", "L"];
   const pool = [...qualifiedThirds];
   const r32 = [];
@@ -152,7 +138,23 @@ function projectKnockout(teams, matches, groups) {
 
   // Interleave so winner-vs-third games meet winner/RU games in the R16
   const order = [0, 8, 1, 12, 2, 9, 3, 13, 4, 10, 5, 14, 6, 11, 7, 15];
-  const bracket = order.map((i) => r32[i]);
+  return order.map((i) => r32[i]);
+}
+
+// ---- Deterministic knockout projection (most likely path) ----
+function projectKnockout(teams, matches, groups) {
+  const standings = {};
+  for (const g of groups) standings[g] = projectGroup(teams, matches, g);
+  const W = {}, RU = {}, TH = [];
+  for (const g of groups) {
+    W[g] = standings[g][0].code;
+    RU[g] = standings[g][1].code;
+    TH.push({ g, ...standings[g][2] });
+  }
+  TH.sort((x, y) => (y.xPts - x.xPts) || (teams[y.code].elo - teams[x.code].elo));
+  const qualifiedThirds = TH.slice(0, 8);
+  const eliminatedThirds = TH.slice(8);
+  const bracket = buildR32Pairings(W, RU, qualifiedThirds);
 
   const rounds = { r32: [], r16: [], qf: [], sf: [], final: [] };
   let current = bracket.map((m) => {
@@ -176,6 +178,68 @@ function projectKnockout(teams, matches, groups) {
   return { standings, rounds, champion: current[0], qualifiedThirds, eliminatedThirds };
 }
 
+// ---- Monte Carlo tournament simulation ----
+// Samples every group game from the W/D/L probabilities, resolves group
+// tables (points, then sampled goal swing, then Elo), fills the R32
+// template and plays out the knockout tree with sampled winners.
+// Returns per-team probabilities of reaching each stage / winning it all.
+function simulateTournament(teams, matches, groups, nSims = 10000, rand = Math.random) {
+  const codes = Object.keys(teams);
+  const tally = {};
+  for (const c of codes) tally[c] = { r32: 0, r16: 0, qf: 0, sf: 0, final: 0, champ: 0 };
+
+  for (let s = 0; s < nSims; s++) {
+    const pts = {}, swing = {};
+    for (const c of codes) { pts[c] = 0; swing[c] = 0; }
+
+    for (const m of matches) {
+      if (m.result) {
+        const [hg, ag] = m.result;
+        pts[m.h] += hg > ag ? 3 : hg === ag ? 1 : 0;
+        pts[m.a] += ag > hg ? 3 : hg === ag ? 1 : 0;
+        swing[m.h] += hg - ag; swing[m.a] += ag - hg;
+        continue;
+      }
+      const p = outcomeProbs(teams, m.h, m.a, m.city);
+      const r = rand();
+      if (r < p.h) { pts[m.h] += 3; swing[m.h] += 1; swing[m.a] -= 1; }
+      else if (r < p.h + p.d) { pts[m.h] += 1; pts[m.a] += 1; }
+      else { pts[m.a] += 3; swing[m.a] += 1; swing[m.h] -= 1; }
+    }
+
+    const W = {}, RU = {}, TH = [];
+    for (const g of groups) {
+      const rows = codes.filter((c) => teams[c].group === g)
+        .sort((x, y) => (pts[y] - pts[x]) || (swing[y] - swing[x]) || (teams[y].elo - teams[x].elo));
+      W[g] = rows[0]; RU[g] = rows[1];
+      TH.push({ g, code: rows[2] });
+    }
+    TH.sort((x, y) => (pts[y.code] - pts[x.code]) || (swing[y.code] - swing[x.code]) || (teams[y.code].elo - teams[x.code].elo));
+    const thirds = TH.slice(0, 8);
+
+    let current = buildR32Pairings(W, RU, thirds).map((m) => {
+      tally[m.h].r32++; tally[m.a].r32++;
+      return rand() < knockoutProb(teams, m.h, m.a) ? m.h : m.a;
+    });
+    for (const stage of ["r16", "qf", "sf", "final"]) {
+      for (const c of current) tally[c][stage]++;
+      const next = [];
+      for (let i = 0; i < current.length; i += 2) {
+        next.push(rand() < knockoutProb(teams, current[i], current[i + 1]) ? current[i] : current[i + 1]);
+      }
+      current = next;
+    }
+    tally[current[0]].champ++;
+  }
+
+  const out = {};
+  for (const c of codes) {
+    out[c] = {};
+    for (const k of Object.keys(tally[c])) out[c][k] = tally[c][k] / nSims;
+  }
+  return out;
+}
+
 if (typeof module !== "undefined") {
-  module.exports = { outcomeProbs, likelyScore, knockoutProb, projectGroup, projectKnockout, expectedGoals, hostBonus };
+  module.exports = { outcomeProbs, likelyScore, knockoutProb, projectGroup, projectKnockout, simulateTournament, expectedGoals, hostBonus };
 }
