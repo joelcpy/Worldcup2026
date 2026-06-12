@@ -121,14 +121,26 @@ function projectGroup(teams, matches, group) {
 // 4 runner-up pairings, no same-group rematches, no winner-vs-winner.
 function buildR32Pairings(W, RU, qualifiedThirds) {
   const winnerGroupsVsThirds = ["A", "C", "E", "F", "H", "I", "K", "L"];
-  const pool = [...qualifiedThirds];
+  // Assign thirds to winner slots with backtracking: a same-group rematch is
+  // never allowed, and since the 8 thirds come from distinct groups a valid
+  // assignment always exists (each third is barred from at most one slot).
+  const assigned = new Array(winnerGroupsVsThirds.length).fill(null);
+  const used = new Array(qualifiedThirds.length).fill(false);
+  (function place(i) {
+    if (i === winnerGroupsVsThirds.length) return true;
+    for (let j = 0; j < qualifiedThirds.length; j++) {
+      if (used[j] || qualifiedThirds[j].g === winnerGroupsVsThirds[i]) continue;
+      used[j] = true; assigned[i] = qualifiedThirds[j];
+      if (place(i + 1)) return true;
+      used[j] = false;
+    }
+    return false;
+  })(0);
   const r32 = [];
-  for (const g of winnerGroupsVsThirds) {
-    let idx = pool.findIndex((t) => t.g !== g);
-    if (idx === -1) idx = 0;
-    const t = pool.splice(idx, 1)[0];
+  winnerGroupsVsThirds.forEach((g, i) => {
+    const t = assigned[i];
     r32.push({ h: W[g], a: t.code, tag: `Winner ${g} vs 3rd ${t.g}` });
-  }
+  });
   // 4 winners vs runners-up (fixed cross-group template)
   const wVsRu = [["B", "I"], ["D", "C"], ["G", "K"], ["J", "H"]];
   for (const [wg, rg] of wVsRu) r32.push({ h: W[wg], a: RU[rg], tag: `Winner ${wg} vs Runner-up ${rg}` });
@@ -241,5 +253,5 @@ function simulateTournament(teams, matches, groups, nSims = 10000, rand = Math.r
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { outcomeProbs, likelyScore, knockoutProb, projectGroup, projectKnockout, simulateTournament, expectedGoals, hostBonus };
+  module.exports = { outcomeProbs, likelyScore, knockoutProb, projectGroup, projectKnockout, simulateTournament, expectedGoals, hostBonus, buildR32Pairings };
 }
