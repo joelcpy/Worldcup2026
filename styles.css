@@ -171,6 +171,23 @@ td.neg { color: #f08c8c; }
 }
 .rg-note a { color: var(--accent2); }
 
+.adj-box {
+  background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--accent2);
+  border-radius: 10px; padding: 10px 16px; margin: 0 0 18px;
+}
+.adj-box summary { cursor: pointer; font-weight: 600; font-size: 0.92rem; }
+.adj-box p { font-size: 0.85rem; margin: 10px 0; line-height: 1.5; }
+.adj-list { font-size: 0.85rem; margin: 6px 0 8px; }
+.btn-ghost { background: var(--card2); color: var(--text); border: 1px solid var(--line); }
+
+.news-row { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.news-row .btn { font-size: 0.82rem; padding: 6px 14px; }
+.news-ext { margin-left: 10px; font-size: 0.8rem; }
+.news-list { margin: 10px 0 0 18px; font-size: 0.86rem; line-height: 1.6; }
+.news-list a { color: var(--text); }
+.news-list a:hover { color: var(--accent); }
+.news-tip { font-size: 0.78rem; margin-top: 8px; }
+
 footer { text-align: center; color: var(--muted); font-size: 0.82rem; margin-top: 44px; }
 
 @media (max-width: 640px) {

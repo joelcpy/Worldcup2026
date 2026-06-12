@@ -29,7 +29,18 @@
       <input id="filter-search" type="search" placeholder="Search team…">
       <span id="match-count" class="muted"></span>
     </div>
-    <p class="hint muted">Click any match to read the full rationale. Bars show win / draw / win probability. Dates and kickoff times are in Singapore Time (SGT = US Eastern +12h), so most matches fall on the SGT morning or afternoon after their US/Mexico calendar date. A few kickoff slots are approximate.</p>
+    <p class="hint muted">Click any match to read the full rationale. Bars show win / draw / win probability. Dates and kickoff times are in Singapore Time (SGT = US Eastern +12h), so most matches fall on the SGT morning or afternoon after their US/Mexico calendar date. A few kickoff slots are approximate. Inside each match you'll find a <strong>📰 Load latest headlines</strong> button — use it 2–3 hours before kickoff to catch line-up and injury news.</p>
+    <details class="adj-box">
+      <summary>⚙️ Team-news adjustments — tell the model what the headlines say</summary>
+      <p class="muted">Elo can't see breaking news. When you read something material before kickoff, nudge that team's rating and <strong>everything recomputes instantly</strong> — match probabilities, group tables, the bracket, the simulation and every EV number in the odds calculators. Rough guide: star player ruled out <strong>−30 to −50</strong> · several starters rested (dead rubber) <strong>−60 to −100</strong> · key player back from injury <strong>+20 to +40</strong>. Adjustments are saved in your browser until you reset them.</p>
+      <div class="calc-row">
+        <select id="adj-team"></select>
+        <input id="adj-delta" type="number" step="5" min="-200" max="200" placeholder="Elo nudge, e.g. -40">
+        <button id="adj-apply" class="btn">Apply &amp; recompute</button>
+        <button id="adj-reset" class="btn btn-ghost">Reset all</button>
+      </div>
+      <div id="adj-list" class="muted adj-list"></div>
+    </details>
     <div id="matches"></div>
   </section>
 

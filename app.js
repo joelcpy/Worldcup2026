@@ -26,6 +26,68 @@ const MATCHES_SGT = MATCHES
   .map((m) => ({ ...m, sgt: kickoffSGT(m) }))
   .sort((x, y) => x.sgt.ts - y.sgt.ts);
 
+// ---------- Team-news Elo adjustments (persisted in the browser) ----------
+function loadAdj() {
+  try { return JSON.parse(localStorage.getItem("eloAdj") || "{}"); } catch { return {}; }
+}
+function saveAdj(adj) {
+  try { localStorage.setItem("eloAdj", JSON.stringify(adj)); } catch { /* private mode */ }
+}
+let ELO_ADJ = loadAdj();
+let TEAMS_EFF = TEAMS;
+
+function adjustedTeams() {
+  const out = {};
+  for (const [c, v] of Object.entries(TEAMS)) out[c] = { ...v, elo: v.elo + (ELO_ADJ[c] || 0) };
+  return out;
+}
+
+// Recompute every view from the (possibly adjusted) ratings
+function refreshAll() {
+  TEAMS_EFF = adjustedTeams();
+  renderMatches();
+  const proj = projectKnockout(TEAMS_EFF, MATCHES, GROUPS);
+  renderGroups(proj);
+  renderBracket(proj);
+  renderOdds(simulateTournament(TEAMS_EFF, MATCHES, GROUPS, 10000));
+  renderAdjList();
+}
+
+function renderAdjList() {
+  const box = document.getElementById("adj-list");
+  const entries = Object.entries(ELO_ADJ).filter(([, d]) => d);
+  box.innerHTML = entries.length
+    ? "Active adjustments: " + entries.map(([c, d]) =>
+        `${T(c).flag} ${T(c).name} ${d > 0 ? "+" : ""}${d}`).join(" · ")
+    : "No adjustments active — model is using the baseline Elo ratings.";
+}
+
+// ---------- Per-match news headlines (fetched by YOUR browser) ----------
+const escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+async function loadHeadlines(btn) {
+  const out = btn.closest(".news-row").querySelector(".news-out");
+  out.innerHTML = `<p class="muted">Fetching latest headlines…</p>`;
+  const q = `${btn.dataset.h} vs ${btn.dataset.a} World Cup`;
+  const rss = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-SG&gl=SG&ceid=SG:en`;
+  try {
+    const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(rss)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const xml = new DOMParser().parseFromString(await res.text(), "text/xml");
+    const items = [...xml.querySelectorAll("item")].slice(0, 5);
+    if (!items.length) throw new Error("no items");
+    out.innerHTML = `<ul class="news-list">` + items.map((it) => {
+      const title = escapeHtml(it.querySelector("title")?.textContent || "");
+      const link = escapeHtml(it.querySelector("link")?.textContent || "#");
+      const mins = Math.max(1, Math.round((Date.now() - new Date(it.querySelector("pubDate")?.textContent || 0)) / 60000));
+      const age = mins < 60 ? `${mins}m ago` : mins < 2880 ? `${Math.round(mins / 60)}h ago` : `${Math.round(mins / 1440)}d ago`;
+      return `<li><a href="${link}" target="_blank" rel="noopener">${title}</a> <span class="muted">(${age})</span></li>`;
+    }).join("") + `</ul>
+      <p class="muted news-tip">Spotted a big story (star ruled out, heavy rotation)? Apply a team adjustment above and everything recomputes.</p>`;
+  } catch {
+    out.innerHTML = `<p class="muted">Couldn't fetch headlines just now (the free CORS proxy can be flaky) — use the "open Google News" link instead.</p>`;
+  }
+}
+
 function pickOutcome(p) {
   if (p.d >= p.h && p.d >= p.a) return "d";
   return p.h >= p.a ? "h" : "a";
@@ -59,6 +121,13 @@ function buildRationale(m, p, score) {
   nums += `, which converts to a ${pct(favP)} win probability with the draw at ${pct(p.d)}. ` +
           `FIFA ranking: ${h.name} #${h.rank} vs ${a.name} #${a.rank}. ` +
           `Recent form — ${h.name}: ${fmtForm(h.form)}, ${a.name}: ${fmtForm(a.form)}.`;
+  const adjH = ELO_ADJ[m.h] || 0, adjA = ELO_ADJ[m.a] || 0;
+  if (adjH || adjA) {
+    const bits = [];
+    if (adjH) bits.push(`${h.name} ${adjH > 0 ? "+" : ""}${adjH}`);
+    if (adjA) bits.push(`${a.name} ${adjA > 0 ? "+" : ""}${adjA}`);
+    nums += ` <em>Includes your team-news Elo adjustments: ${bits.join(", ")}.</em>`;
+  }
   parts.push(nums);
 
   // The football
@@ -118,8 +187,8 @@ function renderMatches() {
       wrap.appendChild(hd);
     }
 
-    const p = outcomeProbs(TEAMS, m.h, m.a, m.city);
-    const score = m.result || likelyScore(TEAMS, m.h, m.a, m.city);
+    const p = outcomeProbs(TEAMS_EFF, m.h, m.a, m.city);
+    const score = m.result || likelyScore(TEAMS_EFF, m.h, m.a, m.city);
     const out = pickOutcome(p);
     const fav = p.h >= p.a ? m.h : m.a;
     const favP = Math.max(p.h, p.a);
@@ -155,7 +224,13 @@ function renderMatches() {
           <span class="expand-hint">rationale ▾</span>
         </div>
       </summary>
-      <div class="rationale">${buildRationale(m, p, score)}</div>`;
+      <div class="rationale">${buildRationale(m, p, score)}
+        <div class="news-row">
+          <button class="news-load btn btn-ghost" data-h="${h.name}" data-a="${a.name}">📰 Load latest headlines</button>
+          <a class="news-ext muted" href="https://news.google.com/search?q=${encodeURIComponent(`${h.name} vs ${a.name} World Cup 2026`)}" target="_blank" rel="noopener">open Google News ↗</a>
+          <div class="news-out"></div>
+        </div>
+      </div>`;
     wrap.appendChild(card);
   }
   document.getElementById("match-count").textContent =
@@ -255,7 +330,7 @@ function renderOdds(sim) {
   const byChamp = Object.keys(TEAMS).sort((a, b) => sim[b].champ - sim[a].champ);
   teamSel.innerHTML = byChamp.map((c) =>
     `<option value="${c}">${T(c).name} — model ${(sim[c].champ * 100).toFixed(1)}%</option>`).join("");
-  document.getElementById("calc-out-btn").addEventListener("click", () => {
+  document.getElementById("calc-out-btn").onclick = () => {
     const code = teamSel.value;
     const odds = parseFloat(document.getElementById("calc-out-odds").value);
     const box = document.getElementById("calc-out-result");
@@ -265,20 +340,20 @@ function renderOdds(sim) {
     box.innerHTML = `<p>${T(code).flag} <strong>${T(code).name}</strong> at <strong>${odds.toFixed(2)}</strong>:
       market implies ${pct(implied)}, model says ${pct(p)}
       (edge ${edge >= 0 ? "+" : ""}${(edge * 100).toFixed(1)}pp, EV ${ev >= 0 ? "+" : ""}${(ev * 100).toFixed(0)}% per $1). ${verdictBadge(ev)}</p>`;
-  });
+  };
 
   // match 1X2 calculator
   const matchSel = document.getElementById("calc-match");
   matchSel.innerHTML = MATCHES.map((m, i) =>
     m.result ? "" : `<option value="${i}">${kickoffSGT(m).date}, ${kickoffSGT(m).time} SGT · ${T(m.h).name} vs ${T(m.a).name} (Grp ${m.g})</option>`).join("");
-  document.getElementById("calc-match-btn").addEventListener("click", () => {
+  document.getElementById("calc-match-btn").onclick = () => {
     const m = MATCHES[parseInt(matchSel.value, 10)];
     const oh = parseFloat(document.getElementById("calc-h").value);
     const od = parseFloat(document.getElementById("calc-d").value);
     const oa = parseFloat(document.getElementById("calc-a").value);
     const box = document.getElementById("calc-match-result");
     if (![oh, od, oa].every((x) => x > 1)) { box.innerHTML = `<p class="muted">Enter all three decimal odds (each above 1.00).</p>`; return; }
-    const p = outcomeProbs(TEAMS, m.h, m.a, m.city);
+    const p = outcomeProbs(TEAMS_EFF, m.h, m.a, m.city);
     const raw = [1 / oh, 1 / od, 1 / oa];
     const book = raw[0] + raw[1] + raw[2];
     const rows = [
@@ -301,7 +376,7 @@ function renderOdds(sim) {
       <p>${best.ev >= 0.05
         ? `Best of the three: <strong>${best.label}</strong> — the price beats the model by ${(best.ev * 100).toFixed(0)}% EV.`
         : `None of the three prices beats the model after the bookmaker margin — the model says pass on this market.`}</p>`;
-  });
+  };
 }
 
 // ---------- Tabs ----------
@@ -327,10 +402,32 @@ document.addEventListener("DOMContentLoaded", () => {
   sel.addEventListener("change", renderMatches);
   document.getElementById("filter-search").addEventListener("input", renderMatches);
 
+  // team-news adjustment controls
+  const adjTeam = document.getElementById("adj-team");
+  adjTeam.innerHTML = Object.keys(TEAMS)
+    .sort((a, b) => TEAMS[a].name.localeCompare(TEAMS[b].name))
+    .map((c) => `<option value="${c}">${TEAMS[c].flag} ${TEAMS[c].name}</option>`).join("");
+  document.getElementById("adj-apply").addEventListener("click", () => {
+    const code = adjTeam.value;
+    let delta = parseInt(document.getElementById("adj-delta").value, 10) || 0;
+    delta = Math.max(-200, Math.min(200, delta));
+    if (delta === 0) delete ELO_ADJ[code]; else ELO_ADJ[code] = delta;
+    saveAdj(ELO_ADJ);
+    refreshAll();
+  });
+  document.getElementById("adj-reset").addEventListener("click", () => {
+    ELO_ADJ = {};
+    saveAdj(ELO_ADJ);
+    document.getElementById("adj-delta").value = "";
+    refreshAll();
+  });
+
+  // per-match news loader (event delegation — cards are re-rendered often)
+  document.getElementById("matches").addEventListener("click", (e) => {
+    const btn = e.target.closest(".news-load");
+    if (btn) { e.preventDefault(); loadHeadlines(btn); }
+  });
+
   initTabs();
-  renderMatches();
-  const proj = projectKnockout(TEAMS, MATCHES, GROUPS);
-  renderGroups(proj);
-  renderBracket(proj);
-  renderOdds(simulateTournament(TEAMS, MATCHES, GROUPS, 10000));
+  refreshAll();
 });
