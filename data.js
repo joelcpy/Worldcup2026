@@ -60,8 +60,8 @@ const TEAMS = {
     note: "2024 AFCON winners with real wing talent (Amad, Adingra) and a powerful midfield. Inconsistent against top-30 opposition." },
 
   // ---- Group F ----
-  NED: { name: "Netherlands", flag: "🇳🇱", group: "F", elo: 1965, rank: 7, form: "WWWDW", star: "Virgil van Dijk",
-    note: "Koeman's side rolled through qualifying. Van Dijk marshals a top-five defence, with Gakpo and Simons supplying the attack. A genuine contender that keeps flying under the radar." },
+  NED: { name: "Netherlands", flag: "🇳🇱", group: "F", elo: 1935, rank: 7, form: "WWWDW", star: "Virgil van Dijk",
+    note: "Koeman's side rolled through qualifying behind Van Dijk's top-five defence. June 2026 injuries bite, though: Xavi Simons (ACL) and Schouten are out for the tournament, Timber withdrew, keeper Verbruggen has a hip knock and Depay arrives carrying a hamstring — a meaningful dent to a genuine contender (rating nudged -30 from 1965)." },
   JPN: { name: "Japan", flag: "🇯🇵", group: "F", elo: 1865, rank: 18, form: "WWDWW", star: "Takefusa Kubo",
     note: "First team to qualify, dominating AFC qualifying. The deepest, most European-based squad Asia has produced — Kubo, Mitoma, Kamada, Itakura. Beat Germany and Spain in 2022; nobody wants this draw." },
   SWE: { name: "Sweden", flag: "🇸🇪", group: "F", elo: 1700, rank: 45, form: "LLWWW", star: "Viktor Gyökeres",
