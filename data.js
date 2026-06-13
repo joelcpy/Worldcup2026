@@ -32,8 +32,8 @@ const TEAMS = {
   // ---- Group C ----
   BRA: { name: "Brazil", flag: "🇧🇷", group: "C", elo: 1991, rank: 5, form: "LWWDL", star: "Vinícius Júnior",
     note: "Ancelotti has steadied a turbulent cycle. The front line (Vinícius, Rodrygo, Raphinha, Estêvão) is as deep as any in the world; form has been streaky but the ceiling remains title-level." },
-  MAR: { name: "Morocco", flag: "🇲🇦", group: "C", elo: 1895, rank: 11, form: "WWWWW", star: "Achraf Hakimi",
-    note: "2022 semi-finalists and 2025 AFCON champions on a long winning run. Elite, miserly defence and a settled core entering its peak — the strongest African side ever to enter a World Cup." },
+  MAR: { name: "Morocco", flag: "🇲🇦", group: "C", elo: 1875, rank: 11, form: "WWWWW", star: "Achraf Hakimi",
+    note: "2022 semi-finalists and 2025 AFCON champions on a long winning run. On the eve of the opener, though, FIFA confirmed Nayef Aguerd (their best centre-back) and Abde Ezzalzouli were replaced in the 26-man squad through injury — a tournament-long hit to the miserly defence that is Morocco's identity (rating nudged -20 from 1895)." },
   HAI: { name: "Haiti", flag: "🇭🇹", group: "C", elo: 1540, rank: 88, form: "WDLWD", star: "Duckens Nazon",
     note: "First World Cup since 1974, qualified amid enormous adversity. Energetic and fearless, but the thinnest squad in the tournament." },
   SCO: { name: "Scotland", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", group: "C", elo: 1735, rank: 36, form: "WWLWD", star: "Scott McTominay",
