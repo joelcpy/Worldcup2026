@@ -13,9 +13,14 @@ const HOST_OF_CITY = {
 };
 
 const HOME_ADVANTAGE = 50;   // Elo bonus when a host nation plays in its own country
-const DRAW_MAX = 0.28;       // draw probability for perfectly even group games
-const DRAW_WIDTH = 650;      // how fast draw likelihood decays with Elo gap
 const BASE_LAMBDA = 1.40;    // expected goals each for two even teams
+const DRAW_BOOST = 1.108;    // lifts the independent-Poisson draw rate to the ~28%
+                             // historical World Cup group-stage rate for even games
+                             // (mild Dixon-Coles-style inflation). The draw is now
+                             // read off the same Poisson grid as the scorelines, so
+                             // it decays realistically with the Elo gap instead of
+                             // the old Gaussian curve, which over-stated draws in
+                             // blowouts (~20% on a 385-point mismatch vs a true ~7%).
 
 // Host-nation Elo bonus for a team playing in the given city.
 // In the knockout projection (no city), hosts keep the bonus —
@@ -36,11 +41,22 @@ function eloExpectation(diff) {
   return 1 / (1 + Math.pow(10, -diff / 400));
 }
 
-// Group-stage outcome probabilities {h, d, a}
+// Draw probability read off the Poisson scoreline grid (so it stays
+// consistent with likelyScore and decays realistically for mismatches),
+// lifted by DRAW_BOOST to match the historical group-stage draw rate.
+function drawProb(diff) {
+  const { h: lh, a: la } = expectedGoals(diff);
+  let pd = 0;
+  for (let k = 0; k <= 12; k++) pd += poisson(lh, k) * poisson(la, k);
+  return Math.min(1, pd * DRAW_BOOST);
+}
+
+// Group-stage outcome probabilities {h, d, a}. The Elo expectation sets the
+// win/loss balance; the draw mass is the Poisson-grid value above.
 function outcomeProbs(teams, hCode, aCode, city) {
   const diff = effectiveDiff(teams, hCode, aCode, city);
   const e = eloExpectation(diff);
-  const pDraw = DRAW_MAX * Math.exp(-Math.pow(diff / DRAW_WIDTH, 2));
+  const pDraw = drawProb(diff);
   return { h: e * (1 - pDraw), d: pDraw, a: (1 - e) * (1 - pDraw), diff };
 }
 
@@ -253,5 +269,5 @@ function simulateTournament(teams, matches, groups, nSims = 10000, rand = Math.r
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { outcomeProbs, likelyScore, knockoutProb, projectGroup, projectKnockout, simulateTournament, expectedGoals, hostBonus, buildR32Pairings };
+  module.exports = { outcomeProbs, likelyScore, knockoutProb, projectGroup, projectKnockout, simulateTournament, expectedGoals, drawProb, hostBonus, buildR32Pairings };
 }
