@@ -147,6 +147,28 @@ function knockoutProb(teams, hCode, aCode) {
   return eloExpectation(diff);
 }
 
+// World Football Elo goal-difference multiplier: a bigger winning margin
+// counts as stronger evidence. 1 for a one-goal win, 1.5 for two, then
+// (11+|GD|)/8 for three or more.
+function goalMultiplier(gd) {
+  const a = Math.abs(gd);
+  if (a <= 1) return 1;
+  if (a === 2) return 1.5;
+  return (11 + a) / 8;
+}
+
+// World Football Elo update for one played match. Returns the rating change
+// to ADD to each side: R_new = R_old + K·G·(result − expected). K=60 for
+// World Cup matches; the expectation uses the same effective diff (including
+// host advantage) the match was predicted with, so beating the odds at home
+// is rewarded a touch less. Zero-sum: the away delta is minus the home delta.
+function eloUpdate(teams, hCode, aCode, hg, ag, city, K = 60) {
+  const eH = eloExpectation(effectiveDiff(teams, hCode, aCode, city));
+  const sH = hg > ag ? 1 : hg === ag ? 0.5 : 0;
+  const dH = K * goalMultiplier(hg - ag) * (sH - eH);
+  return { h: dH, a: -dH };
+}
+
 // ---- Group projection: expected points table ----
 function projectGroup(teams, matches, group) {
   const rows = {};
@@ -316,5 +338,5 @@ function simulateTournament(teams, matches, groups, nSims = 10000, rand = Math.r
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { outcomeProbs, likelyScore, knockoutProb, projectGroup, projectKnockout, simulateTournament, expectedGoals, drawProb, scoreGrid, dcTau, hostBonus, buildR32Pairings };
+  module.exports = { outcomeProbs, likelyScore, knockoutProb, projectGroup, projectKnockout, simulateTournament, expectedGoals, drawProb, scoreGrid, dcTau, eloUpdate, goalMultiplier, hostBonus, buildR32Pairings };
 }
