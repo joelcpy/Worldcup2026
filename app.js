@@ -36,6 +36,11 @@ function saveAdj(adj) {
 let ELO_ADJ = loadAdj();
 let TEAMS_EFF = TEAMS;
 
+// Whether to hide matches that already have a result (persisted in the browser)
+let HIDE_PLAYED = (() => {
+  try { return localStorage.getItem("hidePlayed") === "1"; } catch { return false; }
+})();
+
 function adjustedTeams() {
   const out = {};
   for (const [c, v] of Object.entries(TEAMS)) out[c] = { ...v, elo: v.elo + (ELO_ADJ[c] || 0) };
@@ -173,11 +178,12 @@ function renderMatches() {
   const wrap = document.getElementById("matches");
   wrap.innerHTML = "";
 
-  let shown = 0, currentDate = null;
+  let shown = 0, hidden = 0, currentDate = null;
   for (const m of MATCHES_SGT) {
     const h = T(m.h), a = T(m.a);
     if (groupFilter !== "all" && m.g !== groupFilter) continue;
     if (query && !(h.name.toLowerCase().includes(query) || a.name.toLowerCase().includes(query))) continue;
+    if (HIDE_PLAYED && m.result) { hidden++; continue; }
     shown++;
 
     if (m.sgt.date !== currentDate) {
@@ -245,7 +251,21 @@ function renderMatches() {
     wrap.appendChild(card);
   }
   document.getElementById("match-count").textContent =
-    `${shown} of ${MATCHES.length} group-stage matches`;
+    `${shown} of ${MATCHES.length} group-stage matches` +
+    (hidden ? ` · ${hidden} finished hidden` : "");
+  updatePlayedToggle();
+}
+
+// Keep the hide/show button label in sync with how many matches have finished.
+function updatePlayedToggle() {
+  const btn = document.getElementById("toggle-played");
+  if (!btn) return;
+  const finished = MATCHES.filter((m) => m.result).length;
+  btn.textContent = HIDE_PLAYED
+    ? `Show ${finished} finished match${finished === 1 ? "" : "es"}`
+    : `Hide ${finished} finished match${finished === 1 ? "" : "es"}`;
+  btn.classList.toggle("active", HIDE_PLAYED);
+  btn.disabled = finished === 0;
 }
 
 // ---------- Group tables ----------
@@ -412,6 +432,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   sel.addEventListener("change", renderMatches);
   document.getElementById("filter-search").addEventListener("input", renderMatches);
+  document.getElementById("toggle-played").addEventListener("click", () => {
+    HIDE_PLAYED = !HIDE_PLAYED;
+    try { localStorage.setItem("hidePlayed", HIDE_PLAYED ? "1" : "0"); } catch { /* private mode */ }
+    renderMatches();
+  });
 
   // team-news adjustment controls
   const adjTeam = document.getElementById("adj-team");

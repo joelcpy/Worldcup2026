@@ -185,6 +185,9 @@ td.neg { color: #f08c8c; }
 .adj-box p { font-size: 0.85rem; margin: 10px 0; line-height: 1.5; }
 .adj-list { font-size: 0.85rem; margin: 6px 0 8px; }
 .btn-ghost { background: var(--card2); color: var(--text); border: 1px solid var(--line); }
+.btn:disabled { opacity: 0.45; cursor: default; filter: none; }
+#toggle-played { font-size: 0.85rem; padding: 7px 14px; }
+#toggle-played.active { background: var(--accent); color: #06281a; border-color: var(--accent); font-weight: 600; }
 
 .news-row { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
 .news-row .btn { font-size: 0.82rem; padding: 6px 14px; }
