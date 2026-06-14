@@ -50,10 +50,10 @@ const TEAMS = {
     note: "The dark horse pick. Montella's golden generation — Güler, Yıldız, Çalhanoğlu — plays brave, technical football and reached the playoff final routing its group." },
 
   // ---- Group E ----
-  GER: { name: "Germany", flag: "🇩🇪", group: "E", elo: 1945, rank: 9, form: "WWWWD", star: "Jamal Musiala",
-    note: "Nagelsmann's rebuild has clicked: ruthless qualifying finish, Musiala and Wirtz both fit, and Kimmich anchoring. Still occasionally vulnerable to elite pace in behind." },
-  CUW: { name: "Curaçao", flag: "🇨🇼", group: "E", elo: 1560, rank: 80, form: "DWDWL", star: "Leandro Bacuna",
-    note: "The smallest nation ever at a World Cup, steered there by veteran coach Dick Advocaat. Organised and proud, but a huge talent gap to this group." },
+  GER: { name: "Germany", flag: "🇩🇪", group: "E", elo: 1958, rank: 9, form: "WWWWD", star: "Jamal Musiala",
+    note: "Nagelsmann's rebuild has clicked: ruthless qualifying finish, Musiala and Wirtz both fit, and Kimmich anchoring. Opened with a 7-1 demolition of Curaçao (Havertz brace). Still occasionally vulnerable to elite pace in behind. (Rating +13 after the win.)" },
+  CUW: { name: "Curaçao", flag: "🇨🇼", group: "E", elo: 1547, rank: 80, form: "DWDWL", star: "Leandro Bacuna",
+    note: "The smallest nation ever at a World Cup, steered there by veteran coach Dick Advocaat. Organised and proud, but a huge talent gap to this group — opened with a 1-7 loss to Germany, Comenencia with the consolation. (Rating -13.)" },
   ECU: { name: "Ecuador", flag: "🇪🇨", group: "E", elo: 1850, rank: 23, form: "WDWDW", star: "Moisés Caicedo",
     note: "Conceded fewer goals than anyone but Argentina in CONMEBOL qualifying. Caicedo and Páez give them control and class; scoring enough remains the worry." },
   CIV: { name: "Ivory Coast", flag: "🇨🇮", group: "E", elo: 1730, rank: 40, form: "WWDWL", star: "Amad Diallo",
@@ -148,7 +148,7 @@ const MATCHES = [
   { d: "Jun 13", et: "21:00", g: "C", h: "HAI", a: "SCO", result: [0, 1], city: "Foxborough",
     note: "Massive New England Haitian community makes this a de facto home game for Haiti — but Scotland's set-piece quality should tell." },
   { d: "Jun 13", et: "24:00", g: "D", h: "AUS", a: "TUR", result: [2, 0], city: "Vancouver" },
-  { d: "Jun 14", et: "13:00", g: "E", h: "GER", a: "CUW", city: "Houston",
+  { d: "Jun 14", et: "13:00", g: "E", h: "GER", a: "CUW", city: "Houston", result: [7, 1],
     note: "Largest Elo gap of the entire group stage. Germany's only risk is boredom." },
   { d: "Jun 14", et: "16:00", g: "F", h: "NED", a: "JPN", city: "Arlington",
     note: "The trickiest 'favourite vs second seed' tie of round one. Japan's pressing beat Germany and Spain in 2022; the Dutch build-up will be tested." },
