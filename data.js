@@ -60,10 +60,10 @@ const TEAMS = {
     note: "2024 AFCON winners with real wing talent (Amad, Adingra) and a powerful midfield. Inconsistent against top-30 opposition." },
 
   // ---- Group F ----
-  NED: { name: "Netherlands", flag: "🇳🇱", group: "F", elo: 1935, rank: 7, form: "WWWDW", star: "Virgil van Dijk",
-    note: "Koeman's side rolled through qualifying behind Van Dijk's top-five defence. June 2026 injuries bite, though: Xavi Simons (ACL) and Schouten are out for the tournament, Timber withdrew, keeper Verbruggen has a hip knock and Depay arrives carrying a hamstring — a meaningful dent to a genuine contender (rating nudged -30 from 1965)." },
-  JPN: { name: "Japan", flag: "🇯🇵", group: "F", elo: 1865, rank: 18, form: "WWDWW", star: "Takefusa Kubo",
-    note: "First team to qualify, dominating AFC qualifying. The deepest, most European-based squad Asia has produced — Kubo, Mitoma, Kamada, Itakura. Beat Germany and Spain in 2022; nobody wants this draw." },
+  NED: { name: "Netherlands", flag: "🇳🇱", group: "F", elo: 1929, rank: 7, form: "WWWDW", star: "Virgil van Dijk",
+    note: "Koeman's side rolled through qualifying behind Van Dijk's top-five defence. June 2026 injuries bite, though: Xavi Simons (ACL) and Schouten are out for the tournament, Timber withdrew, keeper Verbruggen has a hip knock and Depay arrives carrying a hamstring — a meaningful dent to a genuine contender (rating nudged -30 from 1965). Opened with a frustrating 2-2 draw vs Japan, conceding an 89th-minute Kamada equaliser (rating -6)." },
+  JPN: { name: "Japan", flag: "🇯🇵", group: "F", elo: 1871, rank: 18, form: "WWDWW", star: "Takefusa Kubo",
+    note: "First team to qualify, dominating AFC qualifying. The deepest, most European-based squad Asia has produced — Kubo, Mitoma, Kamada, Itakura. Beat Germany and Spain in 2022; nobody wants this draw. Twice came from behind to draw 2-2 with the Netherlands, Kamada levelling at the death (rating +6)." },
   SWE: { name: "Sweden", flag: "🇸🇪", group: "F", elo: 1700, rank: 45, form: "LLWWW", star: "Viktor Gyökeres",
     note: "Stumbled through their group, then exploded in the playoffs. Gyökeres and Isak form one of the scariest strike pairs at the tournament; everything behind them is shaky." },
   TUN: { name: "Tunisia", flag: "🇹🇳", group: "F", elo: 1700, rank: 41, form: "WWDWD", star: "Hannibal Mejbri",
@@ -150,7 +150,7 @@ const MATCHES = [
   { d: "Jun 13", et: "24:00", g: "D", h: "AUS", a: "TUR", result: [2, 0], city: "Vancouver" },
   { d: "Jun 14", et: "13:00", g: "E", h: "GER", a: "CUW", city: "Houston", result: [7, 1],
     note: "Largest Elo gap of the entire group stage. Germany's only risk is boredom." },
-  { d: "Jun 14", et: "16:00", g: "F", h: "NED", a: "JPN", city: "Arlington",
+  { d: "Jun 14", et: "16:00", g: "F", h: "NED", a: "JPN", city: "Arlington", result: [2, 2],
     note: "The trickiest 'favourite vs second seed' tie of round one. Japan's pressing beat Germany and Spain in 2022; the Dutch build-up will be tested." },
   { d: "Jun 14", et: "19:00", g: "E", h: "CIV", a: "ECU", city: "Philadelphia" },
   { d: "Jun 14", et: "22:00", g: "F", h: "SWE", a: "TUN", city: "Guadalupe" },
