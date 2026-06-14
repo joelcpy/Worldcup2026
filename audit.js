@@ -42,7 +42,11 @@ ok(MATCHES.every((m) => m.et && /^\d{1,2}:\d{2}$/.test(m.et)), "every fixture ha
 const elos = Object.values(TEAMS).map((t) => t.elo);
 ok(Math.min(...elos) >= 1400 && Math.max(...elos) <= 2250, "all Elo values in sane range 1400–2250",
   `min ${Math.min(...elos)} max ${Math.max(...elos)}`);
-ok(MATCHES.filter((m) => m.result).length === 1, "exactly one played result stored (the opener)");
+const played = MATCHES.filter((m) => m.result);
+ok(played.every((m) => Array.isArray(m.result) && m.result.length === 2 &&
+  Number.isInteger(m.result[0]) && Number.isInteger(m.result[1]) &&
+  m.result[0] >= 0 && m.result[1] >= 0), "every stored result is a valid [int, int] score",
+  `${played.length} matches played so far`);
 
 console.log("\n== 2. Host-bonus / city wiring ==");
 // Every city string must be a key in HOST_OF_CITY, or host bonuses silently vanish.
