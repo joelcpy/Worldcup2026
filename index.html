@@ -27,6 +27,7 @@
     <div class="toolbar">
       <select id="filter-group"><option value="all">All groups</option></select>
       <input id="filter-search" type="search" placeholder="Search team…">
+      <button id="toggle-played" class="btn btn-ghost" type="button">Hide finished matches</button>
       <span id="match-count" class="muted"></span>
     </div>
     <p class="hint muted">Click any match to read the full rationale. Bars show win / draw / win probability. Dates and kickoff times are in Singapore Time (SGT = US Eastern +12h), so most matches fall on the SGT morning or afternoon after their US/Mexico calendar date. A few kickoff slots are approximate. Inside each match you'll find a <strong>📰 Load latest headlines</strong> button — use it 2–3 hours before kickoff to catch line-up and injury news.</p>
@@ -40,6 +41,18 @@
         <button id="adj-reset" class="btn btn-ghost">Reset all</button>
       </div>
       <div id="adj-list" class="muted adj-list"></div>
+    </details>
+    <details class="adj-box results-box">
+      <summary>📝 Enter match results — fold a final score in live</summary>
+      <p class="muted">As each upcoming match finishes, pick it, type the score and Apply. The result is recorded, <strong>both teams' Elo is recalibrated</strong> with the World Football formula (K=60, goal-difference multiplier), and the whole page — match cards, group tables, the bracket, the 10,000-run simulation and every EV number — updates instantly. Saved in your browser until you reset. Matches already settled in the model aren't listed here. <strong>These are your live what-ifs; I still push the official recalibrated commits.</strong></p>
+      <div class="calc-row">
+        <select id="res-match"></select>
+        <input id="res-h" type="number" min="0" max="20" step="1" placeholder="home goals">
+        <input id="res-a" type="number" min="0" max="20" step="1" placeholder="away goals">
+        <button id="res-apply" class="btn">Apply &amp; recompute</button>
+        <button id="res-reset" class="btn btn-ghost">Reset entered</button>
+      </div>
+      <div id="res-list" class="muted adj-list"></div>
     </details>
     <div id="matches"></div>
   </section>
@@ -94,11 +107,11 @@
       <li><strong>Team strength — Elo ratings.</strong> Each of the 48 teams carries a World Football Elo rating (eloratings.net snapshot, 11&nbsp;June&nbsp;2026; pre-tournament top values confirmed against press reports — Spain&nbsp;2157, Argentina&nbsp;2115, France&nbsp;2063, England&nbsp;2024, Brazil&nbsp;1991 — with remaining values closely estimated from the published early-2026 tables). These ratings then move after every result (see "Live recalibration" below). Elo is the best single predictor of international results because it weights opponent strength, margin and match importance.</li>
       <li><strong>Host advantage.</strong> Mexico, the USA and Canada receive a +50 Elo boost when playing inside their own country — roughly the historically observed World Cup host effect (hosts outperform their ranking in ~80% of tournaments).</li>
       <li><strong>Win probability.</strong> The classic Elo formula <code>P = 1 / (1 + 10^(−diff/400))</code> converts the rating gap into a head-to-head expectation.</li>
-      <li><strong>Draws.</strong> The draw probability is read off the same Poisson scoreline grid used for the projected scores, so the two stay consistent and the draw chance decays realistically with the rating gap — about 28% for evenly matched sides (the historical World Cup group-stage rate), falling to single digits for lopsided ties. The Elo expectation then sets the win/loss split of the remaining probability. (An earlier version used a standalone Gaussian draw curve that over-stated draws in big mismatches.)</li>
-      <li><strong>Scorelines.</strong> Expected goals for each side are derived from the rating gap around a 1.4-goal baseline, and the most likely exact score is read off a joint Poisson grid, constrained to agree with the predicted outcome.</li>
+      <li><strong>Scorelines — a Dixon-Coles grid.</strong> Expected goals for each side are derived from the rating gap around a 1.4-goal baseline, then a joint scoreline grid gives the probability of every result. A plain Poisson grid would multiply the two teams' goal counts as if they were independent, which is known to under-state 0-0 and 1-1 and over-state 1-0/0-1; we apply the standard Dixon-Coles correction (a single low-score correlation parameter, ρ = −0.114) that re-weights exactly those four corner cells to match how real matches behave. The projected exact score is the most likely cell of this grid, constrained to agree with the predicted outcome.</li>
+      <li><strong>Draws.</strong> The draw probability is simply the diagonal of that same Dixon-Coles grid, so the scoreline and the 1X2 numbers can never contradict each other. The correlation parameter is calibrated so evenly matched sides draw about 28% (the historical World Cup group-stage rate), and the chance decays realistically to single digits for lopsided ties — no separate draw curve or fudge multiplier. The Elo expectation then sets the win/loss split of the remaining probability. (Two earlier versions — a standalone Gaussian draw curve, then a global draw-rate multiplier on an independent grid — have both been retired in favour of this single calibrated correlation.)</li>
       <li><strong>Groups &amp; knockouts.</strong> Group tables rank teams by expected points across all six fixtures (already-played results count at face value). The knockout tree advances the higher-probability side in every tie; in knockouts the draw mass is reallocated to the stronger team, which would also be favoured across extra time and penalties.</li>
       <li><strong>Tournament probabilities.</strong> The Odds &amp; value tab runs a 10,000-iteration Monte Carlo simulation: every group game is sampled from its W/D/L probabilities, tables are resolved (points → sampled goal swing → Elo), the Round-of-32 template is filled, and the knockout tree is played out with sampled winners. Champion/finalist/semi-final probabilities are the run frequencies.</li>
-      <li><strong>Live recalibration.</strong> After each match the two teams' Elo ratings are updated with the standard World Football Elo formula — <code>R_new = R_old + K·G·(result − expected)</code>, K = 60 for World Cup matches, with a goal-difference multiplier G (1.5 for a two-goal win, larger for bigger margins). Played results also count at face value in the group tables. So every projection on the page reflects what has actually happened so far, not just the pre-tournament snapshot.</li>
+      <li><strong>Live recalibration.</strong> After each match the two teams' Elo ratings are updated with the standard World Football Elo formula — <code>R_new = R_old + K·G·(result − expected)</code>, K = 60 for World Cup matches, with a goal-difference multiplier G (1.5 for a two-goal win, larger for bigger margins). Played results also count at face value in the group tables. So every projection on the page reflects what has actually happened so far, not just the pre-tournament snapshot. You can also fold in a fresh score yourself with the <strong>📝 Enter match results</strong> box above the fixtures — it runs this exact recalibration live in your browser and recomputes every view, while the maintained snapshot still moves with the committed updates.</li>
     </ol>
     <h2>Context the model also leans on</h2>
     <p>The written rationale for each match blends the numbers with scouting context: FIFA ranking (April 2026), recent form, squad notes, star players, and tournament history (e.g. Morocco's 2022 semi-final run, Japan's wins over Germany and Spain, England's perfect qualifying campaign, Mexico's unbeaten record in home World Cup openers).</p>

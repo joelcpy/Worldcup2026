@@ -122,6 +122,26 @@ const xgBig = M.expectedGoals(600);
 ok(xgBig.h <= 3.6 && xgBig.a >= 0.25, "xG clamped to [0.25, 3.6] at extreme gaps",
   `600-gap: ${xgBig.h.toFixed(2)} vs ${xgBig.a.toFixed(2)}`);
 
+console.log("\n== 4b. Elo recalibration ==");
+// Goal-difference multiplier: 1, 1.5, then (11+|GD|)/8
+ok(M.goalMultiplier(1) === 1 && M.goalMultiplier(-1) === 1, "GD multiplier 1 for a one-goal margin");
+ok(M.goalMultiplier(2) === 1.5, "GD multiplier 1.5 for a two-goal margin");
+ok(Math.abs(M.goalMultiplier(4) - 15 / 8) < 1e-12, "GD multiplier (11+|GD|)/8 for big margins", M.goalMultiplier(4).toFixed(3));
+// Updates are zero-sum (Elo is conserved between the two teams)
+const upd = M.eloUpdate(TEAMS, "GER", "CUW", 7, 1, "Houston");
+ok(Math.abs(upd.h + upd.a) < 1e-12, "Elo update is zero-sum between the two sides");
+// A draw between exactly equal teams moves nobody
+const eq = M.eloUpdate({ X: { elo: 1800 }, Y: { elo: 1800 } }, "X", "Y", 1, 1, null);
+ok(Math.abs(eq.h) < 1e-12, "even-rated draw -> no Elo change");
+// An underdog win gains more than a favourite win of the same margin
+const upWin = M.eloUpdate({ U: { elo: 1700 }, F: { elo: 2000 } }, "U", "F", 1, 0, null);
+const favWin = M.eloUpdate({ U: { elo: 1700 }, F: { elo: 2000 } }, "F", "U", 1, 0, null);
+ok(upWin.h > favWin.h, "shock win earns more Elo than the expected win", `${upWin.h.toFixed(1)} vs ${favWin.h.toFixed(1)}`);
+// A bigger winning margin earns more than a narrow one
+const bigWin = M.eloUpdate({ A: { elo: 1900 }, B: { elo: 1900 } }, "A", "B", 4, 0, null);
+const narrowWin = M.eloUpdate({ A: { elo: 1900 }, B: { elo: 1900 } }, "A", "B", 1, 0, null);
+ok(bigWin.h > narrowWin.h, "bigger margin earns more Elo", `${bigWin.h.toFixed(1)} vs ${narrowWin.h.toFixed(1)}`);
+
 console.log("\n== 5. Group projection ==");
 // Expected points must conserve: each unplayed match contributes 3-pDraw total xPts; played contributes 3 or 2.
 for (const g of GROUPS) {
