@@ -80,14 +80,21 @@ const e0 = 1 / (1 + Math.pow(10, 0));
 ok(Math.abs(M.knockoutProb(TEAMS, "ESP", "ESP") - 0.5) < 1e-12, "equal Elo -> 50/50 in knockout");
 const e100 = 1 / (1 + Math.pow(10, -100 / 400));
 ok(Math.abs(e100 - 0.64) < 0.005, "100-Elo gap -> ~64% head-to-head expectation", e100.toFixed(4));
-// Draw curve: max 0.28 at diff 0, monotone decreasing in |diff|
-const drawAt = (d) => 0.28 * Math.exp(-Math.pow(d / 650, 2));
+// Draw curve (Poisson-grid based): ~28% at diff 0, monotone decreasing in |diff|,
+// and realistically small for big mismatches (the old Gaussian over-stated these).
 let mono = true;
-for (let d = 0; d < 800; d += 25) if (drawAt(d + 25) > drawAt(d)) mono = false;
-ok(mono && Math.abs(drawAt(0) - 0.28) < 1e-12, "draw probability peaks at 28% and decays monotonically");
-// Average draw rate across actual fixtures should land near the historical 25-30%
+for (let d = 0; d < 800; d += 25) if (M.drawProb(d + 25) > M.drawProb(d) + 1e-12) mono = false;
+const evenDraw = M.drawProb(0);
+const blowoutDraw = M.drawProb(385);
+ok(mono && Math.abs(evenDraw - 0.28) < 0.01, "draw probability peaks near 28% and decays monotonically", `even ${(evenDraw * 100).toFixed(1)}%`);
+ok(blowoutDraw < 0.10, "draw probability stays realistic on a big mismatch", `385-gap ${(blowoutDraw * 100).toFixed(1)}%`);
+// Mean draw rate across the 72 fixtures. Even games sit at ~28%, but the
+// 48-team field has many genuine mismatches whose (correctly) low draw
+// probability pulls the average down to the high teens — lower than the old
+// 25-30% heuristic, which the previous fat-tailed Gaussian only met by
+// over-stating draws in blowouts.
 const avgDraw = MATCHES.reduce((s, m) => s + M.outcomeProbs(TEAMS, m.h, m.a, m.city).d, 0) / MATCHES.length;
-ok(avgDraw > 0.20 && avgDraw < 0.30, "mean modelled draw rate in historical band", `avg ${(avgDraw * 100).toFixed(1)}%`);
+ok(avgDraw > 0.16 && avgDraw < 0.27, "mean modelled draw rate realistic for a 48-team field", `avg ${(avgDraw * 100).toFixed(1)}%`);
 // knockoutProb complementarity
 const kp = M.knockoutProb(TEAMS, "BRA", "FRA") + M.knockoutProb(TEAMS, "FRA", "BRA");
 ok(Math.abs(kp - 1) < 1e-12, "knockout probabilities complement to 1");
