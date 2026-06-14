@@ -100,7 +100,7 @@ function confidenceLabel(pWin) {
 }
 
 // Build the written rationale for a match from the model output + team facts
-function buildRationale(m, p, score) {
+function buildRationale(m, p, score, projScore) {
   const h = T(m.h), a = T(m.a);
   const out = pickOutcome(p);
   const fav = p.h >= p.a ? m.h : m.a;
@@ -143,7 +143,8 @@ function buildRationale(m, p, score) {
     const [hg, ag] = m.result;
     const actual = hg > ag ? "h" : hg < ag ? "a" : "d";
     const got = actual === out || (out !== "d" && actual === out);
-    verdict = `<strong>Result:</strong> ${h.name} ${hg}–${ag} ${a.name}. ` +
+    const projStr = projScore ? ` Model projected ${h.name} ${projScore[0]}–${projScore[1]} ${a.name}.` : "";
+    verdict = `<strong>Result:</strong> ${h.name} ${hg}–${ag} ${a.name}.${projStr} ` +
       (got ? `The model's pick (${f.name}) was correct.` : `The model's pick (${f.name}) missed.`);
   } else if (out === "d") {
     verdict = `<strong>Verdict:</strong> A draw (${pct(p.d)}) is the single most likely outcome — these sides are separated by almost nothing — ` +
@@ -188,7 +189,8 @@ function renderMatches() {
     }
 
     const p = outcomeProbs(TEAMS_EFF, m.h, m.a, m.city);
-    const score = m.result || likelyScore(TEAMS_EFF, m.h, m.a, m.city);
+    const projScore = likelyScore(TEAMS_EFF, m.h, m.a, m.city);
+    const score = m.result || projScore;
     const out = pickOutcome(p);
     const fav = p.h >= p.a ? m.h : m.a;
     const favP = Math.max(p.h, p.a);
@@ -209,10 +211,16 @@ function renderMatches() {
         </div>
         <div class="teams">
           <span class="team ${fav === m.h && out !== "d" ? "fav" : ""}">${h.flag} ${h.name}</span>
-          <span class="score ${m.result ? "score-result" : "score-proj"}">
-            ${m.result ? `${m.result[0]}–${m.result[1]}` : `${score[0]}–${score[1]}`}
-            ${m.result ? "" : `<span class="score-label">proj</span>`}
-          </span>
+          ${m.result
+            ? `<span class="score score-result">
+                ${m.result[0]}–${m.result[1]}
+                <span class="score-label">FT · proj ${projScore[0]}–${projScore[1]}</span>
+               </span>`
+            : `<span class="score score-proj">
+                ${projScore[0]}–${projScore[1]}
+                <span class="score-label">proj</span>
+               </span>`
+          }
           <span class="team right ${fav === m.a && out !== "d" ? "fav" : ""}">${a.name} ${a.flag}</span>
         </div>
         <div class="prob-bar" title="${h.name} ${pct(p.h)} · Draw ${pct(p.d)} · ${a.name} ${pct(p.a)}">
@@ -227,7 +235,7 @@ function renderMatches() {
           <span class="expand-hint">rationale ▾</span>
         </div>
       </summary>
-      <div class="rationale">${buildRationale(m, p, score)}
+      <div class="rationale">${buildRationale(m, p, score, projScore)}
         <div class="news-row">
           <button class="news-load btn btn-ghost" data-h="${h.name}" data-a="${a.name}">📰 Load latest headlines</button>
           <a class="news-ext muted" href="https://news.google.com/search?q=${encodeURIComponent(`${h.name} vs ${a.name} World Cup 2026`)}" target="_blank" rel="noopener">open Google News ↗</a>
