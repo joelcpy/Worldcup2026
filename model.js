@@ -1,7 +1,7 @@
 // ============================================================
 // Prediction model — Elo-based, with host advantage and a
-// Gaussian draw component. Pure functions, no DOM (also runs
-// under Node for testing).
+// Dixon-Coles-adjusted bivariate Poisson scoreline grid. Pure
+// functions, no DOM (also runs under Node for testing).
 // ============================================================
 
 const HOST_OF_CITY = {
@@ -14,13 +14,16 @@ const HOST_OF_CITY = {
 
 const HOME_ADVANTAGE = 50;   // Elo bonus when a host nation plays in its own country
 const BASE_LAMBDA = 1.40;    // expected goals each for two even teams
-const DRAW_BOOST = 1.108;    // lifts the independent-Poisson draw rate to the ~28%
-                             // historical World Cup group-stage rate for even games
-                             // (mild Dixon-Coles-style inflation). The draw is now
-                             // read off the same Poisson grid as the scorelines, so
-                             // it decays realistically with the Elo gap instead of
-                             // the old Gaussian curve, which over-stated draws in
-                             // blowouts (~20% on a 385-point mismatch vs a true ~7%).
+const DC_RHO = -0.114;       // Dixon-Coles low-score correlation parameter. Independent
+                             // Poisson treats the two teams' goal counts as independent,
+                             // which under-states 0-0 and 1-1 and over-states 1-0/0-1.
+                             // A negative rho re-weights exactly those four corner cells
+                             // (lifting the draws, trimming the 1-0/0-1) to capture the
+                             // real correlation. Tuned so even teams draw ~28% (the
+                             // historical World Cup group-stage rate), which lets the
+                             // single rho replace the old global DRAW_BOOST hack: the
+                             // draw rate is now an emergent property of a properly
+                             // calibrated scoreline grid, not a separate multiplier.
 
 // Host-nation Elo bonus for a team playing in the given city.
 // In the knockout projection (no city), hosts keep the bonus —
@@ -41,14 +44,59 @@ function eloExpectation(diff) {
   return 1 / (1 + Math.pow(10, -diff / 400));
 }
 
-// Draw probability read off the Poisson scoreline grid (so it stays
-// consistent with likelyScore and decays realistically for mismatches),
-// lifted by DRAW_BOOST to match the historical group-stage draw rate.
-function drawProb(diff) {
+// Dixon-Coles dependence factor for the four low-score cells. With rho < 0
+// it lifts 0-0 and 1-1 and trims 1-0 and 0-1; every other cell is unchanged
+// (factor 1), so the marginals are very nearly preserved.
+function dcTau(i, j, lh, la, rho) {
+  if (i === 0 && j === 0) return 1 - lh * la * rho;
+  if (i === 0 && j === 1) return 1 + lh * rho;
+  if (i === 1 && j === 0) return 1 + la * rho;
+  if (i === 1 && j === 1) return 1 - rho;
+  return 1;
+}
+
+// Full joint scoreline grid (0..max each), Dixon-Coles adjusted and
+// normalised to sum to 1. This single grid is the source of truth for the
+// draw probability, the projected scoreline and any goal-based market
+// (BTTS, totals, exact score, handicaps).
+function scoreGrid(diff, max = 12) {
   const { h: lh, a: la } = expectedGoals(diff);
-  let pd = 0;
-  for (let k = 0; k <= 12; k++) pd += poisson(lh, k) * poisson(la, k);
-  return Math.min(1, pd * DRAW_BOOST);
+  const ph = [], pa = [];
+  for (let k = 0; k <= max; k++) { ph[k] = poisson(lh, k); pa[k] = poisson(la, k); }
+  const grid = [];
+  let total = 0;
+  for (let i = 0; i <= max; i++) {
+    grid[i] = [];
+    for (let j = 0; j <= max; j++) {
+      const p = ph[i] * pa[j] * dcTau(i, j, lh, la, DC_RHO);
+      grid[i][j] = p;
+      total += p;
+    }
+  }
+  for (let i = 0; i <= max; i++)
+    for (let j = 0; j <= max; j++) grid[i][j] /= total;
+  return grid;
+}
+
+// Draw probability = the diagonal of the Dixon-Coles scoreline grid, so it
+// stays exactly consistent with likelyScore and decays realistically for
+// mismatches. The DC corner re-weighting alone lands even teams at ~28%
+// (historical group-stage rate) — no separate boost needed. Computed in a
+// single pass without materialising the grid (this is the Monte Carlo hot
+// path), but numerically identical to summing scoreGrid's diagonal.
+function drawProb(diff, max = 12) {
+  const { h: lh, a: la } = expectedGoals(diff);
+  const ph = [], pa = [];
+  for (let k = 0; k <= max; k++) { ph[k] = poisson(lh, k); pa[k] = poisson(la, k); }
+  let total = 0, diag = 0;
+  for (let i = 0; i <= max; i++) {
+    for (let j = 0; j <= max; j++) {
+      const p = ph[i] * pa[j] * dcTau(i, j, lh, la, DC_RHO);
+      total += p;
+      if (i === j) diag += p;
+    }
+  }
+  return diag / total;
 }
 
 // Group-stage outcome probabilities {h, d, a}. The Elo expectation sets the
@@ -75,19 +123,18 @@ function poisson(lambda, k) {
   return Math.exp(-lambda) * Math.pow(lambda, k) / f;
 }
 
-// Most likely exact scoreline (joint independent Poisson, 0–6 grid),
-// constrained to agree with the most likely W/D/L outcome.
+// Most likely exact scoreline, read off the Dixon-Coles scoreline grid
+// (0–6 window), constrained to agree with the most likely W/D/L outcome.
 function likelyScore(teams, hCode, aCode, city) {
   const p = outcomeProbs(teams, hCode, aCode, city);
-  const { h: lh, a: la } = expectedGoals(p.diff);
+  const grid = scoreGrid(p.diff);
   const want = p.h >= p.d && p.h >= p.a ? "h" : (p.a >= p.d ? "a" : "d");
   let best = [1, 1], bestP = -1;
   for (let i = 0; i <= 6; i++) {
     for (let j = 0; j <= 6; j++) {
       const kind = i > j ? "h" : i < j ? "a" : "d";
       if (kind !== want) continue;
-      const pr = poisson(lh, i) * poisson(la, j);
-      if (pr > bestP) { bestP = pr; best = [i, j]; }
+      if (grid[i][j] > bestP) { bestP = grid[i][j]; best = [i, j]; }
     }
   }
   return best;
@@ -269,5 +316,5 @@ function simulateTournament(teams, matches, groups, nSims = 10000, rand = Math.r
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { outcomeProbs, likelyScore, knockoutProb, projectGroup, projectKnockout, simulateTournament, expectedGoals, drawProb, hostBonus, buildR32Pairings };
+  module.exports = { outcomeProbs, likelyScore, knockoutProb, projectGroup, projectKnockout, simulateTournament, expectedGoals, drawProb, scoreGrid, dcTau, hostBonus, buildR32Pairings };
 }
