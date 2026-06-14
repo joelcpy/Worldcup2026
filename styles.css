@@ -89,7 +89,13 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
 .score {
   background: var(--card2); border: 1px solid var(--line); border-radius: 8px;
   padding: 3px 12px; font-weight: 700; font-variant-numeric: tabular-nums;
+  text-align: center; line-height: 1.2;
 }
+.score-label {
+  display: block; font-size: 0.6rem; font-weight: 400; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--muted); margin-top: 1px;
+}
+.score-proj { border-style: dashed; }
 
 .prob-bar {
   display: flex; height: 8px; border-radius: 4px; overflow: hidden;

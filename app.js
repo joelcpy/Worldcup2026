@@ -209,7 +209,10 @@ function renderMatches() {
         </div>
         <div class="teams">
           <span class="team ${fav === m.h && out !== "d" ? "fav" : ""}">${h.flag} ${h.name}</span>
-          <span class="score">${m.result ? `${m.result[0]}–${m.result[1]}` : `${score[0]}–${score[1]}`}</span>
+          <span class="score ${m.result ? "score-result" : "score-proj"}">
+            ${m.result ? `${m.result[0]}–${m.result[1]}` : `${score[0]}–${score[1]}`}
+            ${m.result ? "" : `<span class="score-label">proj</span>`}
+          </span>
           <span class="team right ${fav === m.a && out !== "d" ? "fav" : ""}">${a.name} ${a.flag}</span>
         </div>
         <div class="prob-bar" title="${h.name} ${pct(p.h)} · Draw ${pct(p.d)} · ${a.name} ${pct(p.a)}">
