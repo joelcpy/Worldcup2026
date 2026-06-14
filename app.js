@@ -35,35 +35,11 @@ function saveAdj(adj) {
 }
 let ELO_ADJ = loadAdj();
 let TEAMS_EFF = TEAMS;
-let MATCHES_EFF = MATCHES;
 
 // Whether to hide matches that already have a result (persisted in the browser)
 let HIDE_PLAYED = (() => {
   try { return localStorage.getItem("hidePlayed") === "1"; } catch { return false; }
 })();
-
-// ---------- User-entered match results (persisted in the browser) ----------
-// Keyed by "HOME-AWAY" (each group-stage pairing is unique). These are
-// local what-ifs layered on top of the official results already in data.js;
-// they recalibrate Elo live but don't touch the repo.
-function loadResults() {
-  try { return JSON.parse(localStorage.getItem("userResults") || "{}"); } catch { return {}; }
-}
-function saveResults(r) {
-  try { localStorage.setItem("userResults", JSON.stringify(r)); } catch { /* private mode */ }
-}
-let USER_RESULTS = loadResults();
-const matchKey = (m) => `${m.h}-${m.a}`;
-
-// A user result only applies to matches without an official result in data.js
-// (those are already baked into the baseline Elo — overriding them is the
-// commit path, not the UI).
-function userResultOf(m) {
-  if (m.result) return null;
-  const r = USER_RESULTS[matchKey(m)];
-  return Array.isArray(r) && r.length === 2 ? r : null;
-}
-const resultOf = (m) => m.result || userResultOf(m);
 
 function adjustedTeams() {
   const out = {};
@@ -71,36 +47,15 @@ function adjustedTeams() {
   return out;
 }
 
-// Baseline Elo (with team-news nudges) plus the cumulative recalibration from
-// every user-entered result, applied in kickoff order so each update sees the
-// ratings the earlier games produced.
-function effectiveTeams() {
-  const t = adjustedTeams();
-  for (const m of MATCHES_SGT) {
-    const r = userResultOf(m);
-    if (!r) continue;
-    const d = eloUpdate(t, m.h, m.a, r[0], r[1], m.city);
-    t[m.h] = { ...t[m.h], elo: t[m.h].elo + d.h };
-    t[m.a] = { ...t[m.a], elo: t[m.a].elo + d.a };
-  }
-  return t;
-}
-
-// Recompute every view from the (possibly adjusted) ratings and the
-// user-entered results folded in.
+// Recompute every view from the (possibly adjusted) ratings
 function refreshAll() {
-  TEAMS_EFF = effectiveTeams();
-  MATCHES_EFF = MATCHES.map((m) => {
-    const r = userResultOf(m);
-    return r ? { ...m, result: r } : m;
-  });
+  TEAMS_EFF = adjustedTeams();
   renderMatches();
-  const proj = projectKnockout(TEAMS_EFF, MATCHES_EFF, GROUPS);
+  const proj = projectKnockout(TEAMS_EFF, MATCHES, GROUPS);
   renderGroups(proj);
   renderBracket(proj);
-  renderOdds(simulateTournament(TEAMS_EFF, MATCHES_EFF, GROUPS, 10000));
+  renderOdds(simulateTournament(TEAMS_EFF, MATCHES, GROUPS, 10000));
   renderAdjList();
-  renderResultList();
 }
 
 function renderAdjList() {
@@ -110,29 +65,6 @@ function renderAdjList() {
     ? "Active adjustments: " + entries.map(([c, d]) =>
         `${T(c).flag} ${T(c).name} ${d > 0 ? "+" : ""}${d}`).join(" · ")
     : "No adjustments active — model is using the baseline Elo ratings.";
-}
-
-// List the user-entered results with a per-result clear button, plus the Elo
-// swing each one produced, so the recalibration is transparent.
-function renderResultList() {
-  const box = document.getElementById("res-list");
-  if (!box) return;
-  const t = adjustedTeams();
-  const items = [];
-  for (const m of MATCHES_SGT) {
-    const r = userResultOf(m);
-    if (!r) continue;
-    const d = eloUpdate(t, m.h, m.a, r[0], r[1], m.city);
-    t[m.h] = { ...t[m.h], elo: t[m.h].elo + d.h };
-    t[m.a] = { ...t[m.a], elo: t[m.a].elo + d.a };
-    const swing = (d.h >= 0 ? "+" : "") + Math.round(d.h);
-    items.push(`<span class="res-item">${m.sgt.date} · ${T(m.h).flag} ${T(m.h).name} ${r[0]}–${r[1]} ${T(m.a).name} ${T(m.a).flag}
-      <span class="muted">(Elo ${swing} / ${swing.startsWith("-") ? "+" + swing.slice(1) : "-" + swing})</span>
-      <button class="res-clear" data-key="${matchKey(m)}" title="Clear this result">×</button></span>`);
-  }
-  box.innerHTML = items.length
-    ? "Entered results: " + items.join(" ")
-    : "No results entered — paste tonight's final scores above as they come in.";
 }
 
 // ---------- Per-match news headlines (fetched by YOUR browser) ----------
@@ -251,9 +183,7 @@ function renderMatches() {
     const h = T(m.h), a = T(m.a);
     if (groupFilter !== "all" && m.g !== groupFilter) continue;
     if (query && !(h.name.toLowerCase().includes(query) || a.name.toLowerCase().includes(query))) continue;
-    const result = resultOf(m);
-    const isUserResult = !m.result && !!result;
-    if (HIDE_PLAYED && result) { hidden++; continue; }
+    if (HIDE_PLAYED && m.result) { hidden++; continue; }
     shown++;
 
     if (m.sgt.date !== currentDate) {
@@ -266,7 +196,7 @@ function renderMatches() {
 
     const p = outcomeProbs(TEAMS_EFF, m.h, m.a, m.city);
     const projScore = likelyScore(TEAMS_EFF, m.h, m.a, m.city);
-    const score = result || projScore;
+    const score = m.result || projScore;
     const out = pickOutcome(p);
     const fav = p.h >= p.a ? m.h : m.a;
     const favP = Math.max(p.h, p.a);
@@ -283,14 +213,14 @@ function renderMatches() {
         <div class="match-top">
           <span class="badge group-badge">Group ${m.g}</span>
           <span class="venue">${m.sgt.time} SGT · ${m.city}</span>
-          ${result ? `<span class="badge played-badge${isUserResult ? " user-badge" : ""}">${isUserResult ? "FT✎" : "FT"} ${result[0]}–${result[1]}</span>` : ""}
+          ${m.result ? `<span class="badge played-badge">FT ${m.result[0]}–${m.result[1]}</span>` : ""}
         </div>
         <div class="teams">
           <span class="team ${fav === m.h && out !== "d" ? "fav" : ""}">${h.flag} ${h.name}</span>
-          ${result
+          ${m.result
             ? `<span class="score score-result">
-                ${result[0]}–${result[1]}
-                <span class="score-label">${isUserResult ? "your result" : "FT"} · proj ${projScore[0]}–${projScore[1]}</span>
+                ${m.result[0]}–${m.result[1]}
+                <span class="score-label">FT · proj ${projScore[0]}–${projScore[1]}</span>
                </span>`
             : `<span class="score score-proj">
                 ${projScore[0]}–${projScore[1]}
@@ -330,7 +260,7 @@ function renderMatches() {
 function updatePlayedToggle() {
   const btn = document.getElementById("toggle-played");
   if (!btn) return;
-  const finished = MATCHES.filter((m) => resultOf(m)).length;
+  const finished = MATCHES.filter((m) => m.result).length;
   btn.textContent = HIDE_PLAYED
     ? `Show ${finished} finished match${finished === 1 ? "" : "es"}`
     : `Hide ${finished} finished match${finished === 1 ? "" : "es"}`;
@@ -525,43 +455,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ELO_ADJ = {};
     saveAdj(ELO_ADJ);
     document.getElementById("adj-delta").value = "";
-    refreshAll();
-  });
-
-  // match-result entry controls — list only fixtures without an official result,
-  // in kickoff order
-  const resMatch = document.getElementById("res-match");
-  resMatch.innerHTML = MATCHES_SGT
-    .filter((m) => !m.result)
-    .map((m) => `<option value="${matchKey(m)}">${m.sgt.date} · Grp ${m.g} · ${T(m.h).name} v ${T(m.a).name}</option>`)
-    .join("");
-  const findMatch = (key) => MATCHES.find((m) => matchKey(m) === key);
-  document.getElementById("res-apply").addEventListener("click", () => {
-    const key = resMatch.value;
-    if (!key) return;
-    const hg = parseInt(document.getElementById("res-h").value, 10);
-    const ag = parseInt(document.getElementById("res-a").value, 10);
-    if (!Number.isInteger(hg) || !Number.isInteger(ag) || hg < 0 || ag < 0) {
-      alert("Enter both scores as whole numbers (0 or more).");
-      return;
-    }
-    USER_RESULTS[key] = [hg, ag];
-    saveResults(USER_RESULTS);
-    document.getElementById("res-h").value = "";
-    document.getElementById("res-a").value = "";
-    refreshAll();
-  });
-  document.getElementById("res-reset").addEventListener("click", () => {
-    USER_RESULTS = {};
-    saveResults(USER_RESULTS);
-    refreshAll();
-  });
-  // per-result clear buttons (event delegation — the list re-renders)
-  document.getElementById("res-list").addEventListener("click", (e) => {
-    const btn = e.target.closest(".res-clear");
-    if (!btn) return;
-    delete USER_RESULTS[btn.dataset.key];
-    saveResults(USER_RESULTS);
     refreshAll();
   });
 
