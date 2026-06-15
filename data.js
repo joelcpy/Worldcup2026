@@ -64,10 +64,10 @@ const TEAMS = {
     note: "Koeman's side rolled through qualifying behind Van Dijk's top-five defence. June 2026 injuries bite, though: Xavi Simons (ACL) and Schouten are out for the tournament, Timber withdrew, keeper Verbruggen has a hip knock and Depay arrives carrying a hamstring — a meaningful dent to a genuine contender (rating nudged -30 from 1965). Opened with a frustrating 2-2 draw vs Japan, conceding an 89th-minute Kamada equaliser (rating -6)." },
   JPN: { name: "Japan", flag: "🇯🇵", group: "F", elo: 1871, rank: 18, form: "WWDWW", star: "Takefusa Kubo",
     note: "First team to qualify, dominating AFC qualifying. The deepest, most European-based squad Asia has produced — Kubo, Mitoma, Kamada, Itakura. Beat Germany and Spain in 2022; nobody wants this draw. Twice came from behind to draw 2-2 with the Netherlands, Kamada levelling at the death (rating +6)." },
-  SWE: { name: "Sweden", flag: "🇸🇪", group: "F", elo: 1790, rank: 45, form: "LLWWW", star: "Viktor Gyökeres",
-    note: "Stumbled through their group, then exploded in the playoffs. Gyökeres and Isak form one of the scariest strike pairs at the tournament; everything behind them is shaky (rating lifted from a placeholder 1700 to reflect their attacking quality and the market's strong read)." },
-  TUN: { name: "Tunisia", flag: "🇹🇳", group: "F", elo: 1700, rank: 41, form: "WWDWD", star: "Hannibal Mejbri",
-    note: "Qualified unbeaten without conceding. A disciplined low block that frustrates anyone — see the 2022 win over France — but creates very little." },
+  SWE: { name: "Sweden", flag: "🇸🇪", group: "F", elo: 1832, rank: 45, form: "WLLWWW", star: "Viktor Gyökeres",
+    note: "Gyökeres and Isak delivered immediately — both scored in a stunning 5-1 demolition of Tunisia, Ayari adding a brace. One of the biggest opening-day wins in World Cup history (rating +42 to 1832)." },
+  TUN: { name: "Tunisia", flag: "🇹🇳", group: "F", elo: 1658, rank: 41, form: "LWWDWD", star: "Hannibal Mejbri",
+    note: "Defensively solid on paper but completely undone by Sweden's pace — conceded five including a 96th-minute Ayari howitzer. Already in a deep hole in Group F (rating −42 to 1658)." },
 
   // ---- Group G ----
   BEL: { name: "Belgium", flag: "🇧🇪", group: "G", elo: 1855, rank: 8, form: "WDWWD", star: "Jérémy Doku",
@@ -153,7 +153,7 @@ const MATCHES = [
   { d: "Jun 14", et: "16:00", g: "F", h: "NED", a: "JPN", city: "Arlington", result: [2, 2],
     note: "The trickiest 'favourite vs second seed' tie of round one. Japan's pressing beat Germany and Spain in 2022; the Dutch build-up will be tested." },
   { d: "Jun 14", et: "19:00", g: "E", h: "CIV", a: "ECU", city: "Philadelphia", result: [1, 0] },
-  { d: "Jun 14", et: "22:00", g: "F", h: "SWE", a: "TUN", city: "Guadalupe" },
+  { d: "Jun 14", et: "22:00", g: "F", h: "SWE", a: "TUN", city: "Guadalupe", result: [5, 1] },
   { d: "Jun 15", et: "13:00", g: "H", h: "ESP", a: "CPV", city: "Atlanta" },
   { d: "Jun 15", et: "18:00", g: "G", h: "BEL", a: "EGY", city: "Seattle",
     note: "Salah against Belgium's high line is the one genuine threat to the favourites here." },
