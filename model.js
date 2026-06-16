@@ -108,9 +108,15 @@ function outcomeProbs(teams, hCode, aCode, city) {
   return { h: e * (1 - pDraw), d: pDraw, a: (1 - e) * (1 - pDraw), diff };
 }
 
-// Expected goals for each side from the Elo gap
+// Expected goals for each side from the Elo gap. The clamp ceiling (3.0)
+// reflects that even elite teams average ~2.5-3.0 expected goals against
+// minnows rather than running away to 3.6+; the floor (0.40) keeps a weak
+// side's chance of nicking one alive. A tighter range than the original
+// [0.25, 3.6] — it makes lopsided draws less of a mathematical impossibility
+// (a 3.6-vs-0.35 Poisson essentially can't draw) and keeps projected
+// scorelines realistic, while leaving even-match goal levels untouched.
 function expectedGoals(diff) {
-  const clamp = (x) => Math.max(0.25, Math.min(3.6, x));
+  const clamp = (x) => Math.max(0.40, Math.min(3.0, x));
   return {
     h: clamp(BASE_LAMBDA * Math.pow(10, diff / 900)),
     a: clamp(BASE_LAMBDA * Math.pow(10, -diff / 900)),

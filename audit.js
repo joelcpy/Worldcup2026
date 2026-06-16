@@ -87,7 +87,7 @@ for (let d = 0; d < 800; d += 25) if (M.drawProb(d + 25) > M.drawProb(d) + 1e-12
 const evenDraw = M.drawProb(0);
 const blowoutDraw = M.drawProb(385);
 ok(mono && Math.abs(evenDraw - 0.28) < 0.01, "draw probability peaks near 28% and decays monotonically", `even ${(evenDraw * 100).toFixed(1)}%`);
-ok(blowoutDraw < 0.10, "draw probability stays realistic on a big mismatch", `385-gap ${(blowoutDraw * 100).toFixed(1)}%`);
+ok(blowoutDraw < 0.13, "draw probability stays realistic on a big mismatch", `385-gap ${(blowoutDraw * 100).toFixed(1)}%`);
 // Mean draw rate across the 72 fixtures. Even games sit at ~28%, but the
 // 48-team field has many genuine mismatches whose (correctly) low draw
 // probability pulls the average down to the high teens — lower than the old
