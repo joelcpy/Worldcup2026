@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>World Cup 2026 — Match Predictions & Analysis</title>
-<link rel="stylesheet" href="styles.css?v=20260616c">
+<link rel="stylesheet" href="styles.css?v=20260616d">
 </head>
 <body>
 <header>
@@ -97,6 +97,7 @@
       <li><strong>Win probability.</strong> The classic Elo formula <code>P = 1 / (1 + 10^(−diff/400))</code> converts the rating gap into a head-to-head expectation.</li>
       <li><strong>Scorelines — a Dixon-Coles grid.</strong> Expected goals for each side are derived from the rating gap around a 1.4-goal baseline, then a joint scoreline grid gives the probability of every result. A plain Poisson grid would multiply the two teams' goal counts as if they were independent, which is known to under-state 0-0 and 1-1 and over-state 1-0/0-1; we apply the standard Dixon-Coles correction (a single low-score correlation parameter, ρ = −0.114) that re-weights exactly those four corner cells to match how real matches behave. The projected exact score is the most likely cell of this grid, constrained to agree with the predicted outcome.</li>
       <li><strong>Draws.</strong> The draw probability is simply the diagonal of that same Dixon-Coles grid, so the scoreline and the 1X2 numbers can never contradict each other. The correlation parameter is calibrated so evenly matched sides draw about 28% (the historical World Cup group-stage rate), and the chance decays realistically to single digits for lopsided ties — no separate draw curve or fudge multiplier. The Elo expectation then sets the win/loss split of the remaining probability. (Two earlier versions — a standalone Gaussian draw curve, then a global draw-rate multiplier on an independent grid — have both been retired in favour of this single calibrated correlation.)</li>
+      <li><strong>Opening-round caution.</strong> Each team's <em>first</em> game of the tournament (flagged with an "Opening round" tag) carries a small extra dampening of expected goals. Since 1998 the opening round has been the most draw-heavy, lowest-scoring phase of every World Cup — roughly 26% draws versus 20% across all group games — because sides play not to lose with no form data yet to go on (Qatar 2022 set records for goalless openers, and 2026's first round again ran draw-heavy). Damping the goals for these fixtures lifts their draw rate and lowers scoring together, the way the history shows, while keeping the scoreline and 1X2 numbers consistent. The effect is deliberately modest and applies only to round-one matches.</li>
       <li><strong>Groups &amp; knockouts.</strong> Group tables rank teams by expected points across all six fixtures (already-played results count at face value). The knockout tree advances the higher-probability side in every tie; in knockouts the draw mass is reallocated to the stronger team, which would also be favoured across extra time and penalties.</li>
       <li><strong>Tournament probabilities.</strong> The Odds &amp; value tab runs a 10,000-iteration Monte Carlo simulation: every group game is sampled from its W/D/L probabilities, tables are resolved (points → sampled goal swing → Elo), the Round-of-32 template is filled, and the knockout tree is played out with sampled winners. Champion/finalist/semi-final probabilities are the run frequencies.</li>
       <li><strong>Live recalibration.</strong> After each match the two teams' Elo ratings are updated with the standard World Football Elo formula — <code>R_new = R_old + K·G·(result − expected)</code>, K = 60 for World Cup matches, with a goal-difference multiplier G (1.5 for a two-goal win, larger for bigger margins). Played results also count at face value in the group tables. So every projection on the page reflects what has actually happened so far, not just the pre-tournament snapshot.</li>
@@ -123,8 +124,8 @@
   <p>Built 11 June 2026 · Probabilities are forecasts, not promises — that's why they play the games.</p>
 </footer>
 
-<script src="data.js?v=20260616c"></script>
-<script src="model.js?v=20260616c"></script>
-<script src="app.js?v=20260616c"></script>
+<script src="data.js?v=20260616d"></script>
+<script src="model.js?v=20260616d"></script>
+<script src="app.js?v=20260616d"></script>
 </body>
 </html>

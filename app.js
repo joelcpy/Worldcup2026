@@ -22,6 +22,19 @@ function kickoffSGT(m) {
     time: `${h12}:${String(sgt.getUTCMinutes()).padStart(2, "0")} ${h >= 12 ? "pm" : "am"}`,
   };
 }
+// Flag opening-round fixtures (each team's first game of the tournament).
+// These are historically the most draw-heavy, lowest-scoring games — the model
+// damps expected goals for them via the opener flag. Computed in kickoff order
+// on the base MATCHES objects so the flag flows into the MATCHES_SGT copies and
+// into projectGroup / the calculator alike.
+(() => {
+  const seen = new Set();
+  for (const m of [...MATCHES].sort((a, b) => kickoffSGT(a).ts - kickoffSGT(b).ts)) {
+    m.opener = !seen.has(m.h) && !seen.has(m.a);
+    seen.add(m.h); seen.add(m.a);
+  }
+})();
+
 const MATCHES_SGT = MATCHES
   .map((m) => ({ ...m, sgt: kickoffSGT(m) }))
   .sort((x, y) => x.sgt.ts - y.sgt.ts);
@@ -194,8 +207,8 @@ function renderMatches() {
       wrap.appendChild(hd);
     }
 
-    const p = outcomeProbs(TEAMS_EFF, m.h, m.a, m.city);
-    const projScore = likelyScore(TEAMS_EFF, m.h, m.a, m.city);
+    const p = outcomeProbs(TEAMS_EFF, m.h, m.a, m.city, m.opener);
+    const projScore = likelyScore(TEAMS_EFF, m.h, m.a, m.city, m.opener);
     const score = m.result || projScore;
     const out = pickOutcome(p);
     const fav = p.h >= p.a ? m.h : m.a;
@@ -213,6 +226,7 @@ function renderMatches() {
         <div class="match-top">
           <span class="badge group-badge">Group ${m.g}</span>
           <span class="venue">${m.sgt.time} SGT · ${m.city}</span>
+          ${m.opener && !m.result ? `<span class="badge opener-badge" title="Opening-round game: historically more cautious, draw-heavy and lower-scoring — the model damps expected goals here.">Opening round</span>` : ""}
           ${m.result ? `<span class="badge played-badge">FT ${m.result[0]}–${m.result[1]}</span>` : ""}
         </div>
         <div class="teams">
@@ -384,7 +398,7 @@ function renderOdds(sim) {
     const oa = parseFloat(document.getElementById("calc-a").value);
     const box = document.getElementById("calc-match-result");
     if (![oh, od, oa].every((x) => x > 1)) { box.innerHTML = `<p class="muted">Enter all three decimal odds (each above 1.00).</p>`; return; }
-    const p = outcomeProbs(TEAMS_EFF, m.h, m.a, m.city);
+    const p = outcomeProbs(TEAMS_EFF, m.h, m.a, m.city, m.opener);
     const raw = [1 / oh, 1 / od, 1 / oa];
     const book = raw[0] + raw[1] + raw[2];
     const rows = [

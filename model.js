@@ -13,6 +13,18 @@ const HOST_OF_CITY = {
 };
 
 const HOME_ADVANTAGE = 50;   // Elo bonus when a host nation plays in its own country
+const OPENER_DAMP = 0.85;    // expected-goals multiplier for opening-round matches (each
+                             // team's first game). Since 1998 the opening round has been
+                             // the most draw-heavy phase of every World Cup — ~26% draws
+                             // vs ~20% across all group games — because sides play not to
+                             // lose with no form data to go on. Damping goals lifts the
+                             // draw rate AND lowers scoring for these fixtures, the two
+                             // effects the history shows, while keeping the scoreline grid
+                             // and the 1X2 draw mutually consistent (a direct draw-rate
+                             // boost would not). A pure goal damp can't reach the full +6pp
+                             // without pushing opener scoring implausibly low, so this is
+                             // deliberately partial — it captures the direction and roughly
+                             // half the magnitude. Applies only to round-one fixtures.
 const BASE_LAMBDA = 1.30;    // expected goals each for two even teams. Trimmed from
                              // 1.40 after the recent-World-Cup goal level (2018: 2.64,
                              // 2022: 2.69, 2026-so-far: 2.88 goals/game) showed the model
@@ -64,8 +76,8 @@ function dcTau(i, j, lh, la, rho) {
 // normalised to sum to 1. This single grid is the source of truth for the
 // draw probability, the projected scoreline and any goal-based market
 // (BTTS, totals, exact score, handicaps).
-function scoreGrid(diff, max = 12) {
-  const { h: lh, a: la } = expectedGoals(diff);
+function scoreGrid(diff, max = 12, opener = false) {
+  const { h: lh, a: la } = expectedGoals(diff, opener);
   const ph = [], pa = [];
   for (let k = 0; k <= max; k++) { ph[k] = poisson(lh, k); pa[k] = poisson(la, k); }
   const grid = [];
@@ -89,8 +101,8 @@ function scoreGrid(diff, max = 12) {
 // (historical group-stage rate) — no separate boost needed. Computed in a
 // single pass without materialising the grid (this is the Monte Carlo hot
 // path), but numerically identical to summing scoreGrid's diagonal.
-function drawProb(diff, max = 12) {
-  const { h: lh, a: la } = expectedGoals(diff);
+function drawProb(diff, max = 12, opener = false) {
+  const { h: lh, a: la } = expectedGoals(diff, opener);
   const ph = [], pa = [];
   for (let k = 0; k <= max; k++) { ph[k] = poisson(lh, k); pa[k] = poisson(la, k); }
   let total = 0, diag = 0;
@@ -106,10 +118,10 @@ function drawProb(diff, max = 12) {
 
 // Group-stage outcome probabilities {h, d, a}. The Elo expectation sets the
 // win/loss balance; the draw mass is the Poisson-grid value above.
-function outcomeProbs(teams, hCode, aCode, city) {
+function outcomeProbs(teams, hCode, aCode, city, opener = false) {
   const diff = effectiveDiff(teams, hCode, aCode, city);
   const e = eloExpectation(diff);
-  const pDraw = drawProb(diff);
+  const pDraw = drawProb(diff, 12, opener);
   return { h: e * (1 - pDraw), d: pDraw, a: (1 - e) * (1 - pDraw), diff };
 }
 
@@ -120,11 +132,12 @@ function outcomeProbs(teams, hCode, aCode, city) {
 // [0.25, 3.6] — it makes lopsided draws less of a mathematical impossibility
 // (a 3.6-vs-0.35 Poisson essentially can't draw) and keeps projected
 // scorelines realistic, while leaving even-match goal levels untouched.
-function expectedGoals(diff) {
+function expectedGoals(diff, opener = false) {
+  const base = opener ? BASE_LAMBDA * OPENER_DAMP : BASE_LAMBDA;
   const clamp = (x) => Math.max(0.40, Math.min(3.0, x));
   return {
-    h: clamp(BASE_LAMBDA * Math.pow(10, diff / 900)),
-    a: clamp(BASE_LAMBDA * Math.pow(10, -diff / 900)),
+    h: clamp(base * Math.pow(10, diff / 900)),
+    a: clamp(base * Math.pow(10, -diff / 900)),
   };
 }
 
@@ -136,9 +149,9 @@ function poisson(lambda, k) {
 
 // Most likely exact scoreline, read off the Dixon-Coles scoreline grid
 // (0–6 window), constrained to agree with the most likely W/D/L outcome.
-function likelyScore(teams, hCode, aCode, city) {
-  const p = outcomeProbs(teams, hCode, aCode, city);
-  const grid = scoreGrid(p.diff);
+function likelyScore(teams, hCode, aCode, city, opener = false) {
+  const p = outcomeProbs(teams, hCode, aCode, city, opener);
+  const grid = scoreGrid(p.diff, 12, opener);
   const want = p.h >= p.d && p.h >= p.a ? "h" : (p.a >= p.d ? "a" : "d");
   let best = [1, 1], bestP = -1;
   for (let i = 0; i <= 6; i++) {
@@ -199,8 +212,8 @@ function projectGroup(teams, matches, group) {
       rows[m.h].played++; rows[m.a].played++;
       continue;
     }
-    const p = outcomeProbs(teams, m.h, m.a, m.city);
-    const xg = expectedGoals(p.diff);
+    const p = outcomeProbs(teams, m.h, m.a, m.city, m.opener);
+    const xg = expectedGoals(p.diff, m.opener);
     rows[m.h].xPts += 3 * p.h + p.d;
     rows[m.a].xPts += 3 * p.a + p.d;
     rows[m.h].xGF += xg.h; rows[m.h].xGA += xg.a;

@@ -119,8 +119,23 @@ ok(scoreMismatch === 0, "projected scoreline always agrees with the predicted W/
 const xgEven = M.expectedGoals(0);
 ok(Math.abs(xgEven.h - 1.3) < 1e-12 && Math.abs(xgEven.a - 1.3) < 1e-12, "even match -> 1.3 xG each");
 const xgBig = M.expectedGoals(600);
-ok(xgBig.h <= 3.6 && xgBig.a >= 0.25, "xG clamped to [0.25, 3.6] at extreme gaps",
+ok(xgBig.h <= 3.0 && xgBig.a >= 0.40, "xG clamped to [0.40, 3.0] at extreme gaps",
   `600-gap: ${xgBig.h.toFixed(2)} vs ${xgBig.a.toFixed(2)}`);
+
+// Opening-round caution: opener fixtures should draw MORE and score LESS than
+// the same matchup later in the group stage (historical ~26% vs ~20% draws).
+const evenNorm = M.drawProb(0, 12, false);
+const evenOpen = M.drawProb(0, 12, true);
+ok(evenOpen > evenNorm, "opener lifts the draw probability", `even ${(evenNorm * 100).toFixed(1)}% -> opener ${(evenOpen * 100).toFixed(1)}%`);
+const xgOpen = M.expectedGoals(0, true);
+ok(xgOpen.h < xgEven.h, "opener damps expected goals", `${xgEven.h.toFixed(2)} -> ${xgOpen.h.toFixed(2)} each`);
+// Use a moderate gap (France-Senegal): in an extreme mismatch the favourite's
+// goals are already clamped at the ceiling, so the damp is absorbed (caution
+// barely moves a total mismatch) — the effect lives in normal matchups.
+const oddsNorm = M.outcomeProbs(TEAMS, "FRA", "SEN", "East Rutherford", false);
+const oddsOpen = M.outcomeProbs(TEAMS, "FRA", "SEN", "East Rutherford", true);
+ok(oddsOpen.d > oddsNorm.d && Math.abs(oddsOpen.h + oddsOpen.d + oddsOpen.a - 1) < 1e-9,
+  "opener raises a normal matchup's draw chance and still sums to 1", `${(oddsNorm.d * 100).toFixed(1)}% -> ${(oddsOpen.d * 100).toFixed(1)}%`);
 
 console.log("\n== 4b. Elo recalibration ==");
 // Goal-difference multiplier: 1, 1.5, then (11+|GD|)/8
