@@ -13,7 +13,12 @@ const HOST_OF_CITY = {
 };
 
 const HOME_ADVANTAGE = 50;   // Elo bonus when a host nation plays in its own country
-const BASE_LAMBDA = 1.40;    // expected goals each for two even teams
+const BASE_LAMBDA = 1.30;    // expected goals each for two even teams. Trimmed from
+                             // 1.40 after the recent-World-Cup goal level (2018: 2.64,
+                             // 2022: 2.69, 2026-so-far: 2.88 goals/game) showed the model
+                             // running ~0.2-0.4 goals/game high. Lower goals also lift the
+                             // even-team draw rate slightly (to ~29%), consistent with how
+                             // draw-heavy the modern group stage has become.
 const DC_RHO = -0.114;       // Dixon-Coles low-score correlation parameter. Independent
                              // Poisson treats the two teams' goal counts as independent,
                              // which under-states 0-0 and 1-1 and over-states 1-0/0-1.

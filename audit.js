@@ -86,7 +86,7 @@ let mono = true;
 for (let d = 0; d < 800; d += 25) if (M.drawProb(d + 25) > M.drawProb(d) + 1e-12) mono = false;
 const evenDraw = M.drawProb(0);
 const blowoutDraw = M.drawProb(385);
-ok(mono && Math.abs(evenDraw - 0.28) < 0.01, "draw probability peaks near 28% and decays monotonically", `even ${(evenDraw * 100).toFixed(1)}%`);
+ok(mono && Math.abs(evenDraw - 0.293) < 0.01, "draw probability peaks near 29% and decays monotonically", `even ${(evenDraw * 100).toFixed(1)}%`);
 ok(blowoutDraw < 0.13, "draw probability stays realistic on a big mismatch", `385-gap ${(blowoutDraw * 100).toFixed(1)}%`);
 // Mean draw rate across the 72 fixtures. Even games sit at ~28%, but the
 // 48-team field has many genuine mismatches whose (correctly) low draw
@@ -117,7 +117,7 @@ for (const m of MATCHES) {
 }
 ok(scoreMismatch === 0, "projected scoreline always agrees with the predicted W/D/L outcome");
 const xgEven = M.expectedGoals(0);
-ok(Math.abs(xgEven.h - 1.4) < 1e-12 && Math.abs(xgEven.a - 1.4) < 1e-12, "even match -> 1.4 xG each");
+ok(Math.abs(xgEven.h - 1.3) < 1e-12 && Math.abs(xgEven.a - 1.3) < 1e-12, "even match -> 1.3 xG each");
 const xgBig = M.expectedGoals(600);
 ok(xgBig.h <= 3.6 && xgBig.a >= 0.25, "xG clamped to [0.25, 3.6] at extreme gaps",
   `600-gap: ${xgBig.h.toFixed(2)} vs ${xgBig.a.toFixed(2)}`);
