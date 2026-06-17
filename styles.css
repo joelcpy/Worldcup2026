@@ -81,7 +81,6 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
 }
 .group-badge { background: var(--card2); color: var(--accent2); border: 1px solid var(--line); }
 .played-badge { background: #14301f; color: var(--accent); border: 1px solid var(--accent); }
-.opener-badge { background: #2d2a14; color: var(--accent2); border: 1px solid var(--accent2); }
 
 .teams { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 1.06rem; }
 .team { flex: 1; }
