@@ -110,23 +110,23 @@ const TEAMS = {
     note: "First-ever World Cup, built on the run to the 2023 Asian Cup final. Quick on the break through Tamari, but defensively raw at this level." },
 
   // ---- Group K ----
-  POR: { name: "Portugal", flag: "🇵🇹", group: "K", elo: 2009, rank: 6, form: "WWLWW", star: "Cristiano Ronaldo",
+  POR: { name: "Portugal", flag: "🇵🇹", group: "K", elo: 1985, rank: 6, form: "WWLWW", star: "Cristiano Ronaldo",
     note: "2025 Nations League champions. Ronaldo, 41, is now the finisher in a side carried by Vitinha, Bruno Fernandes, Neves and Leão. The deepest midfield in Europe after Spain." },
-  COL: { name: "Colombia", flag: "🇨🇴", group: "K", elo: 1951, rank: 13, form: "WWWDW", star: "Luis Díaz",
+  COL: { name: "Colombia", flag: "🇨🇴", group: "K", elo: 1965, rank: 13, form: "WWWDW", star: "Luis Díaz",
     note: "Copa América 2024 finalists with one of the longest unbeaten runs in world football under Lorenzo. Díaz is in career-best form and James has rolled back the years." },
-  UZB: { name: "Uzbekistan", flag: "🇺🇿", group: "K", elo: 1650, rank: 50, form: "WDWDW", star: "Abbosbek Fayzullaev",
+  UZB: { name: "Uzbekistan", flag: "🇺🇿", group: "K", elo: 1636, rank: 50, form: "WDWDW", star: "Abbosbek Fayzullaev",
     note: "Historic first qualification, now coached by Fabio Cannavaro. Technically tidy with a golden generation core, but no experience at this altitude." },
-  COD: { name: "DR Congo", flag: "🇨🇩", group: "K", elo: 1640, rank: 60, form: "WDWWD", star: "Yoane Wissa",
+  COD: { name: "DR Congo", flag: "🇨🇩", group: "K", elo: 1664, rank: 60, form: "WDWWD", star: "Yoane Wissa",
     note: "First World Cup since 1974 (as Zaire), won via a dramatic playoff run. Premier League quality up front in Wissa; chaotic but dangerous." },
 
   // ---- Group L ----
-  ENG: { name: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", group: "L", elo: 2024, rank: 4, form: "WWWWW", star: "Jude Bellingham",
+  ENG: { name: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", group: "L", elo: 2050, rank: 4, form: "WWWWW", star: "Jude Bellingham",
     note: "Tuchel's England won every qualifier without conceding a goal. Kane, Bellingham, Saka, Palmer — the attacking pool is frightening. The eternal question is whether they finally finish the job." },
-  CRO: { name: "Croatia", flag: "🇭🇷", group: "L", elo: 1870, rank: 10, form: "WWDWD", star: "Luka Modrić",
+  CRO: { name: "Croatia", flag: "🇭🇷", group: "L", elo: 1844, rank: 10, form: "WWDWD", star: "Luka Modrić",
     note: "Modrić, 40, leads one last campaign. Semi-finalists or better in two of the last three World Cups — the most battle-hardened knockout team alive, even as legs age." },
-  GHA: { name: "Ghana", flag: "🇬🇭", group: "L", elo: 1645, rank: 73, form: "WLWDW", star: "Mohammed Kudus",
+  GHA: { name: "Ghana", flag: "🇬🇭", group: "L", elo: 1680, rank: 73, form: "WLWDW", star: "Mohammed Kudus",
     note: "Kudus and the Williams brothers give the Black Stars real talent, but qualifying form was streaky and the defence leaks." },
-  PAN: { name: "Panama", flag: "🇵🇦", group: "L", elo: 1700, rank: 30, form: "WDWWD", star: "Adalberto Carrasquilla",
+  PAN: { name: "Panama", flag: "🇵🇦", group: "L", elo: 1665, rank: 30, form: "WDWWD", star: "Adalberto Carrasquilla",
     note: "CONCACAF's quiet overachievers — topped their qualifying group and pushed the US around in recent Gold Cups. Compact, streetwise, never an easy out." },
 };
 
@@ -165,11 +165,11 @@ const MATCHES = [
   { d: "Jun 16", et: "21:00", g: "J", h: "ARG", a: "ALG", city: "Kansas City", result: [3, 0],
     note: "Echoes of Saudi Arabia 2022: a confident African champion against the holders. Argentina won't sleepwalk twice." },
   { d: "Jun 16", et: "24:00", g: "J", h: "AUT", a: "JOR", city: "Santa Clara", result: [3, 1] },
-  { d: "Jun 17", et: "13:00", g: "K", h: "POR", a: "COD", city: "Houston" },
-  { d: "Jun 17", et: "16:00", g: "L", h: "ENG", a: "CRO", city: "Arlington",
+  { d: "Jun 17", et: "13:00", g: "K", h: "POR", a: "COD", city: "Houston", result: [1, 1] },
+  { d: "Jun 17", et: "16:00", g: "L", h: "ENG", a: "CRO", city: "Arlington", result: [4, 2],
     note: "The biggest matchday-one clash on paper: a 2018 semi-final rematch. England's press against Modrić's tempo control — the group winner is probably decided here." },
-  { d: "Jun 17", et: "19:00", g: "L", h: "GHA", a: "PAN", city: "Toronto" },
-  { d: "Jun 17", et: "22:00", g: "K", h: "UZB", a: "COL", city: "Mexico City" },
+  { d: "Jun 17", et: "19:00", g: "L", h: "GHA", a: "PAN", city: "Toronto", result: [1, 0] },
+  { d: "Jun 17", et: "22:00", g: "K", h: "UZB", a: "COL", city: "Mexico City", result: [1, 3] },
 
   // -------- Matchday 2 --------
   { d: "Jun 18", et: "12:00", g: "A", h: "CZE", a: "RSA", city: "Atlanta" },
