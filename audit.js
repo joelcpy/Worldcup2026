@@ -157,7 +157,7 @@ for (const g of GROUPS) {
 ok(true, "xPts conserved in all 12 groups (or failures above)");
 const gA = M.projectGroup(TEAMS, MATCHES, "A");
 const mexRow = gA.find((r) => r.code === "MEX");
-ok(mexRow.played === 1 && mexRow.xPts >= 3, "Mexico's actual 2-0 result counted at face value",
+ok(mexRow.played === 2 && mexRow.xPts >= 6, "Mexico's two actual wins counted at face value",
   `played ${mexRow.played}, xPts ${mexRow.xPts.toFixed(2)}`);
 
 console.log("\n== 6. R32 bracket integrity ==");
