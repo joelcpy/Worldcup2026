@@ -10,14 +10,14 @@
 
 const TEAMS = {
   // ---- Group A ----
-  MEX: { name: "Mexico", flag: "🇲🇽", group: "A", elo: 1900, rank: 15, form: "WWDWW", star: "Santiago Giménez",
-    note: "Co-host playing every group game on home soil, including the Azteca. Dangerous in transition with a raucous crowd behind them, but historically fragile once they meet elite opposition in the round of 16." },
-  RSA: { name: "South Africa", flag: "🇿🇦", group: "A", elo: 1655, rank: 56, form: "WDWLL", star: "Lyle Foster",
-    note: "Athletic, well-organised Bafana Bafana side built on the Mamelodi Sundowns core. Good AFCON pedigree recently, but limited cutting edge against deeper squads." },
-  KOR: { name: "South Korea", flag: "🇰🇷", group: "A", elo: 1755, rank: 22, form: "WWWDW", star: "Son Heung-min",
-    note: "Son's final World Cup. Strong attacking talent (Lee Kang-in, Hwang Hee-chan) and cruised through AFC qualifying, but the defence can be opened up by quick wingers." },
-  CZE: { name: "Czechia", flag: "🇨🇿", group: "A", elo: 1685, rank: 43, form: "WLWWD", star: "Patrik Schick",
-    note: "Came through the UEFA playoffs. Physical, direct and elite at set pieces with Schick and Hložek up top; lacks pace in the back line." },
+  MEX: { name: "Mexico", flag: "🇲🇽", group: "A", elo: 1919, rank: 15, form: "WWWWW", star: "Santiago Giménez",
+    note: "Co-host, and the only team with a perfect group: three wins from three (RSA 2-0, KOR 1-0, CZE 3-0), topping Group A without conceding until the dead rubber. Dangerous in transition with the Azteca behind them, but historically fragile once they meet elite opposition in the round of 16 (rating +19)." },
+  RSA: { name: "South Africa", flag: "🇿🇦", group: "A", elo: 1693, rank: 56, form: "WLDLW", star: "Lyle Foster",
+    note: "Through to the knockout rounds for the first time in their history. After a flat start they beat Korea 1-0 (Maseko, 63') to pip them for second in Group A — a round-of-32 tie with Canada awaits. Well-organised Bafana Bafana side built on the Mamelodi Sundowns core (rating +38)." },
+  KOR: { name: "South Korea", flag: "🇰🇷", group: "A", elo: 1717, rank: 22, form: "WWDWL", star: "Son Heung-min",
+    note: "A nervous wait. Son was controversially benched and Korea lost 1-0 to South Africa when a win would have sealed second — now they need results elsewhere to sneak through as one of the best third-placed teams. Attacking talent (Lee Kang-in, Hwang Hee-chan) never clicked here (rating −38)." },
+  CZE: { name: "Czechia", flag: "🇨🇿", group: "A", elo: 1666, rank: 43, form: "LWDWL", star: "Patrik Schick",
+    note: "Eliminated, bottom of Group A. Came through the UEFA playoffs but managed just two points and went down 3-0 to Mexico in the finale when only a win would do. Physical and strong at set pieces, but lacked the pace and cutting edge at this level (rating −19)." },
 
   // ---- Group B ----
   CAN: { name: "Canada", flag: "🇨🇦", group: "B", elo: 1765, rank: 27, form: "WWDWD", star: "Jonathan David",
@@ -207,8 +207,8 @@ const MATCHES = [
   { d: "Jun 24", et: "18:00", g: "C", h: "MAR", a: "HAI", city: "Atlanta", result: [4, 2] },
   { d: "Jun 24", et: "18:00", g: "C", h: "SCO", a: "BRA", city: "Miami", result: [0, 3],
     note: "If Scotland need a result here to advance, history is against them: played 3, lost 3 vs Brazil at World Cups." },
-  { d: "Jun 24", et: "21:00", g: "A", h: "CZE", a: "MEX", city: "Mexico City" },
-  { d: "Jun 24", et: "21:00", g: "A", h: "RSA", a: "KOR", city: "Monterrey" },
+  { d: "Jun 24", et: "21:00", g: "A", h: "CZE", a: "MEX", city: "Mexico City", result: [0, 3] },
+  { d: "Jun 24", et: "21:00", g: "A", h: "RSA", a: "KOR", city: "Monterrey", result: [1, 0] },
   { d: "Jun 25", et: "16:00", g: "E", h: "ECU", a: "GER", city: "East Rutherford",
     note: "Sneaky candidate for the best match of the group stage: Ecuador's elite defence and Caicedo's midfield control can genuinely frustrate Germany." },
   { d: "Jun 25", et: "16:00", g: "E", h: "CUW", a: "CIV", city: "Philadelphia" },
