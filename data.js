@@ -90,14 +90,14 @@ const TEAMS = {
     note: "Bielsa's intense Uruguay flattered to deceive in the opener — fell behind to Saudi Arabia and needed a late Araújo strike to escape with a 1-1 draw. Streaky finishing again the issue (rating −18)." },
 
   // ---- Group I ----
-  FRA: { name: "France", flag: "🇫🇷", group: "I", elo: 2084, rank: 3, form: "WWDWW", star: "Kylian Mbappé",
-    note: "Finalists in two straight World Cups, with Mbappé at his absolute peak and absurd depth — they could field two top-ten national teams. Only complacency beats them early." },
-  IRQ: { name: "Iraq", flag: "🇮🇶", group: "I", elo: 1594, rank: 58, form: "WDWDL", star: "Aymen Hussein",
+  FRA: { name: "France", flag: "🇫🇷", group: "I", elo: 2113, rank: 3, form: "WWDWW", star: "Kylian Mbappé",
+    note: "Won Group I with a perfect nine points — beat Senegal 3-1, Iraq 3-0, then Norway 4-1 behind a Dembélé first-half hat-trick. Mbappé at his peak over absurd depth (they could field two top-ten teams). Looking ominous; only complacency beats them early (rating +6, +6, then +29)." },
+  IRQ: { name: "Iraq", flag: "🇮🇶", group: "I", elo: 1559, rank: 58, form: "WDWDL", star: "Aymen Hussein",
     note: "First World Cup since 1986, via the inter-confederation playoff. Passionate and physical, with Hussein's aerial threat the main outlet." },
-  NOR: { name: "Norway", flag: "🇳🇴", group: "I", elo: 1915, rank: 29, form: "WWWWW", star: "Erling Haaland",
-    note: "First World Cup since 1998, and they arrive on a perfect qualifying run. Haaland scored 16 in qualifying; Ødegaard dictates everything. A top seed nobody wanted to draw." },
-  SEN: { name: "Senegal", flag: "🇸🇳", group: "I", elo: 1750, rank: 19, form: "WWWDW", star: "Iliman Ndiaye",
-    note: "Africa's most complete squad after Morocco — Ndiaye, Sarr brothers, Koulibaly, Mendy. Long unbeaten run coming in; a genuinely live round-of-16 threat." },
+  NOR: { name: "Norway", flag: "🇳🇴", group: "I", elo: 1886, rank: 29, form: "WWWWL", star: "Erling Haaland",
+    note: "Through to the knockouts as Group I runners-up. Beat Iraq 2-1 and Senegal 3-2, then rested Haaland, Ødegaard and eight others in a dead-rubber 1-4 loss to France — the rating hit overstates it. Haaland and Ødegaard make them a side nobody wanted to draw (rating −29, mostly rotation noise)." },
+  SEN: { name: "Senegal", flag: "🇸🇳", group: "I", elo: 1785, rank: 19, form: "WLLW", star: "Iliman Ndiaye",
+    note: "Africa's most complete squad after Morocco — Ndiaye, Sarr brothers, Koulibaly, Mendy. Lost to France and Norway but thrashed 10-man Iraq 5-0 (Gueye double) to keep best-third qualification hopes alive. Underwhelmed for their talent, but dangerous if they sneak through (rating +35)." },
 
   // ---- Group J ----
   ARG: { name: "Argentina", flag: "🇦🇷", group: "J", elo: 2139, rank: 2, form: "LWDWW", star: "Lionel Messi",
@@ -217,9 +217,9 @@ const MATCHES = [
   { d: "Jun 25", et: "22:00", g: "D", h: "TUR", a: "USA", city: "Inglewood", result: [3, 2],
     note: "Probably for first place in Group D. Güler and Yıldız between the lines is the exact profile that has troubled the US midfield for years — but 70,000 in SoFi tilts it." },
   { d: "Jun 25", et: "22:00", g: "D", h: "PAR", a: "AUS", city: "Santa Clara", result: [0, 0] },
-  { d: "Jun 26", et: "15:00", g: "I", h: "NOR", a: "FRA", city: "Foxborough",
+  { d: "Jun 26", et: "15:00", g: "I", h: "NOR", a: "FRA", city: "Foxborough", result: [1, 4],
     note: "Haaland and Mbappé share a World Cup pitch for the first time. France may already be through; Norway may need everything." },
-  { d: "Jun 26", et: "15:00", g: "I", h: "SEN", a: "IRQ", city: "Toronto" },
+  { d: "Jun 26", et: "15:00", g: "I", h: "SEN", a: "IRQ", city: "Toronto", result: [5, 0] },
   { d: "Jun 26", et: "20:00", g: "H", h: "CPV", a: "KSA", city: "Houston" },
   { d: "Jun 26", et: "20:00", g: "H", h: "URU", a: "ESP", city: "Guadalajara",
     note: "The group-stage heavyweight bout: world #1 against Bielsa's chaos machine. Uruguay's press is the most aggressive Spain will have faced all cycle." },
