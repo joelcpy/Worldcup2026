@@ -184,14 +184,6 @@ td.neg { color: #f08c8c; }
 .adj-box summary { cursor: pointer; font-weight: 600; font-size: 0.92rem; }
 .adj-box p { font-size: 0.85rem; margin: 10px 0; line-height: 1.5; }
 .adj-list { font-size: 0.85rem; margin: 6px 0 8px; }
-.results-box { border-left-color: var(--accent); }
-.res-item { display: inline-block; margin: 2px 10px 2px 0; }
-.res-clear {
-  background: none; border: none; color: var(--accent2); cursor: pointer;
-  font-size: 1rem; line-height: 1; padding: 0 2px; vertical-align: middle;
-}
-.res-clear:hover { color: #ff6b6b; }
-.user-badge { background: var(--accent); color: #06281a; }
 .btn-ghost { background: var(--card2); color: var(--text); border: 1px solid var(--line); }
 .btn:disabled { opacity: 0.45; cursor: default; filter: none; }
 #toggle-played { font-size: 0.85rem; padding: 7px 14px; }
