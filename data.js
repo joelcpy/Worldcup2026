@@ -100,23 +100,23 @@ const TEAMS = {
     note: "Africa's most complete squad after Morocco — Ndiaye, Sarr brothers, Koulibaly, Mendy. Lost to France and Norway but thrashed 10-man Iraq 5-0 (Gueye double) to keep best-third qualification hopes alive. Underwhelmed for their talent, but dangerous if they sneak through (rating +35)." },
 
   // ---- Group J ----
-  ARG: { name: "Argentina", flag: "🇦🇷", group: "J", elo: 2139, rank: 2, form: "LWDWW", star: "Lionel Messi",
+  ARG: { name: "Argentina", flag: "🇦🇷", group: "J", elo: 2143, rank: 2, form: "LWDWW", star: "Lionel Messi",
     note: "Defending champions, now through to the last 16. Messi's brace in a 2-0 win over Austria took him past Klose as the all-time World Cup top scorer (18), after a 3-0 opening win over Algeria. No one-man team though: Mac Allister, Enzo, Julián Álvarez and the meanest defence in South America. Scaloni's management is the gold standard (rating +14)." },
-  ALG: { name: "Algeria", flag: "🇩🇿", group: "J", elo: 1736, rank: 34, form: "WWDWW", star: "Riyad Mahrez",
+  ALG: { name: "Algeria", flag: "🇩🇿", group: "J", elo: 1742, rank: 34, form: "WWDWW", star: "Riyad Mahrez",
     note: "Smashed CAF qualifying records on their return to the finals. Mahrez and Amoura lead a potent attack; the back line is the soft spot." },
-  AUT: { name: "Austria", flag: "🇦🇹", group: "J", elo: 1811, rank: 24, form: "WWWDW", star: "Christoph Baumgartner",
+  AUT: { name: "Austria", flag: "🇦🇹", group: "J", elo: 1805, rank: 24, form: "WWWDW", star: "Christoph Baumgartner",
     note: "Rangnick's relentless pressing machine topped its qualifying group. Tactically the most cohesive 'second-tier' side in Europe — a horrible matchup for possession teams." },
-  JOR: { name: "Jordan", flag: "🇯🇴", group: "J", elo: 1584, rank: 64, form: "WDWLD", star: "Mousa Tamari",
+  JOR: { name: "Jordan", flag: "🇯🇴", group: "J", elo: 1580, rank: 64, form: "WDWLD", star: "Mousa Tamari",
     note: "First-ever World Cup, built on the run to the 2023 Asian Cup final. Quick on the break through Tamari, but defensively raw at this level." },
 
   // ---- Group K ----
-  POR: { name: "Portugal", flag: "🇵🇹", group: "K", elo: 1999, rank: 6, form: "WWLWW", star: "Cristiano Ronaldo",
+  POR: { name: "Portugal", flag: "🇵🇹", group: "K", elo: 1997, rank: 6, form: "WWLWW", star: "Cristiano Ronaldo",
     note: "2025 Nations League champions. Ronaldo, 41, rolled back the years with his first two goals of the tournament in a 5-0 rout of Uzbekistan, after a 1-1 opening draw with DR Congo. Carried by Vitinha, Bruno Fernandes, Neves and Leão — the deepest midfield in Europe after Spain (rating +14)." },
-  COL: { name: "Colombia", flag: "🇨🇴", group: "K", elo: 1974, rank: 13, form: "WWWDW", star: "Luis Díaz",
+  COL: { name: "Colombia", flag: "🇨🇴", group: "K", elo: 1976, rank: 13, form: "WWWDW", star: "Luis Díaz",
     note: "Copa América 2024 finalists with one of the longest unbeaten runs in world football under Lorenzo. Díaz is in career-best form and James has rolled back the years." },
-  UZB: { name: "Uzbekistan", flag: "🇺🇿", group: "K", elo: 1622, rank: 50, form: "WDWDW", star: "Abbosbek Fayzullaev",
+  UZB: { name: "Uzbekistan", flag: "🇺🇿", group: "K", elo: 1581, rank: 50, form: "WDWDW", star: "Abbosbek Fayzullaev",
     note: "Historic first qualification, now coached by Fabio Cannavaro. Technically tidy with a golden generation core, but no experience at this altitude." },
-  COD: { name: "DR Congo", flag: "🇨🇩", group: "K", elo: 1655, rank: 60, form: "WDWWD", star: "Yoane Wissa",
+  COD: { name: "DR Congo", flag: "🇨🇩", group: "K", elo: 1696, rank: 60, form: "WDWWD", star: "Yoane Wissa",
     note: "First World Cup since 1974 (as Zaire), won via a dramatic playoff run. Premier League quality up front in Wissa; chaotic but dangerous." },
 
   // ---- Group L ----
@@ -226,13 +226,13 @@ const MATCHES = [
   { d: "Jun 26", et: "23:00", g: "G", h: "EGY", a: "IRN", city: "Seattle", result: [1, 1],
     note: "Almost certainly a straight shootout for second place. Salah against Iran's deep block — fine margins, set pieces decide it." },
   { d: "Jun 26", et: "23:00", g: "G", h: "NZL", a: "BEL", city: "Vancouver", result: [1, 5] },
-  { d: "Jun 27", et: "22:00", g: "J", h: "JOR", a: "ARG", city: "Arlington" },
-  { d: "Jun 27", et: "22:00", g: "J", h: "ALG", a: "AUT", city: "Kansas City" },
+  { d: "Jun 27", et: "22:00", g: "J", h: "JOR", a: "ARG", city: "Arlington", result: [1, 3] },
+  { d: "Jun 27", et: "22:00", g: "J", h: "ALG", a: "AUT", city: "Kansas City", result: [3, 3] },
   { d: "Jun 27", et: "17:00", g: "L", h: "PAN", a: "ENG", city: "East Rutherford", result: [0, 2] },
   { d: "Jun 27", et: "17:00", g: "L", h: "CRO", a: "GHA", city: "Philadelphia", result: [2, 1] },
-  { d: "Jun 27", et: "19:30", g: "K", h: "COL", a: "POR", city: "Miami",
+  { d: "Jun 27", et: "19:30", g: "K", h: "COL", a: "POR", city: "Miami", result: [0, 0],
     note: "The best matchday-three fixture: two top-six Elo sides, Díaz against Ronaldo, with the group title and a kinder bracket at stake." },
-  { d: "Jun 27", et: "19:30", g: "K", h: "COD", a: "UZB", city: "Atlanta" },
+  { d: "Jun 27", et: "19:30", g: "K", h: "COD", a: "UZB", city: "Atlanta", result: [3, 1] },
 ];
 
 const GROUPS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
